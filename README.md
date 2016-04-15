@@ -30,6 +30,4 @@ Future development including bug-fixes, feature extensions, and even
 custom-tailored examples will be heavily motivated by user comments and 
 ratings!
 
-For more information about how this code communicates with Sphero, stop by my wiki at: 
-http://wiki.mark-toma.com/view/Sphero_API_Tutorial 
-http://wiki.mark-toma.com/view/Sphero_API_Matlab_SDK
+For more information about how this code communicates with Sphero, stop by [my wiki](http://wiki.mark-toma.com/) to browse through [Sphero API Tutorial](http://wiki.mark-toma.com/view/Sphero_API_Tutorial) and [Sphero API MATLAB SDK](http://wiki.mark-toma.com/view/Sphero_API_Matlab_SDK).
