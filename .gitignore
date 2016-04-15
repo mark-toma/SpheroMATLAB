@@ -1,3 +1,6 @@
 
 # ignore MATLAB files
 *.asv
+
+# ignore development resources
+*_devel*
