@@ -2,11 +2,12 @@
 
 Control Sphero from MATLAB in m-code!
 
-**Myo SDK MATLAB MEX Wrapper** is also available on MathWorks File Exchange [here](http://www.mathworks.com/matlabcentral/fileexchange/52746-sphero-api-matlab-sdk).
+**Sphero API MATLAB SDK** is also available on MathWorks File Exchange [here](http://www.mathworks.com/matlabcentral/fileexchange/52746-sphero-api-matlab-sdk).
 
 ## Description
 
-This project provides a few Matlab classes that can be used to control Sphero from Matlab in m-code. Check out http://www.sphero.com/sphero for more information about Sphero, the robotic ball. 
+This project provides a few Matlab classes that can be used to control Sphero from Matlab in m-code. Check out the [Sphero website](http://www.sphero.com/sphero) for more information about Sphero, the robotic ball.
+
 The base class, SpheroCore: 
 
 * Provides a Matlab interface to Sphero through the Bluetooth object of the 
