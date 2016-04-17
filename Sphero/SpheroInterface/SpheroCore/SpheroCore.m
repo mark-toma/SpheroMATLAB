@@ -196,7 +196,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       'name',[],...
       'address',[],...
       'rgb',nan(1,3));
-      
+    
     % autoreconnect_info  Holds autoreconnect information.
     %   TODO
     autoreconnect_info = struct(...
@@ -254,9 +254,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
   
   methods
     
-    % =====================================================================
-    % === Constructor and Overrides =======================================
-    
+    %% === Constructor and Overrides ======================================
     function s = SpheroCore()
       % SpheroCore  Constructs object.
       %   A bluetooth connection to Sphero must subsequently be established
@@ -271,9 +269,9 @@ classdef SpheroCore < handle & SpheroCoreConstants
         s.machine_byte_order = 'little-endian';
       elseif strcmp('B',endianness)
         s.machine_byte_order = 'big-endian';
-      else
-        % something went wrong
       end
+      assert(~isempty(s.machine_byte_order),...
+        'Failed to set machine byte order.');
       
       % attach listeners
       addlistener(s,'NewPowerNotification',@s.DispatchNewPowerNotificationHandlers);
@@ -314,37 +312,12 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
     end
     
-    function disp(s)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      builtin('disp',s);
-      
-      fprintf('  /**\n');
-      fprintf('   * %s - Version: %d.%0.2d Released: %s\n',mfilename,s.version,s.revision,s.release_date);
-      fprintf('   * Author: %s (%s)\n',s.author,s.author_email);
-      fprintf('   */\n\n');
-      
-      % give a little help if sphero isn't connected
-      if isempty(s.bt)
-        mySphero = inputname(1);
-        fprintf('    Sphero isn''t connected yet!\n');
-        fprintf('    Quickstart guide:\n');
-        fprintf('      1.) Make sure Sphero is paired in your OS\n');
-        fprintf('      2.) Make sure Sphero is awake (tap it)\n');
-        fprintf('      3.) Run the command %s.ConnectDevice()\n',mySphero);
-      end
-      
-    end
-    
-    % END Constructor and Overrides =======================================
-    
-    
-    % =====================================================================
-    % === Setters/Getters =================================================
+    %% === Getters ========================================================
     function val = get.time_since_init(s)
       val = now * s.SECONDS_PER_DAY - s.time_init;
     end
     
+    %% === Setters ========================================================
     function set.time(s,val)
       s.time = val;
     end
@@ -404,108 +377,93 @@ classdef SpheroCore < handle & SpheroCoreConstants
     end
     
     function set.OnNewPowerNotificationFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewPowerNotificationFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewPowerNotificationFcn = func;
     end
     
     function set.OnNewLevel1DiagnosticFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewLevel1DiagnosticFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewLevel1DiagnosticFcn = func;
     end
     
     function set.OnNewDataStreamingFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewDataStreamingFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewDataStreamingFcn = func;
     end
     
     function set.OnNewConfigBlockContentsFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewConfigBlockContentsFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewConfigBlockContentsFcn = func;
     end
     
     function set.OnNewPreSleepWarningFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewPreSleepWarningFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewPreSleepWarningFcn = func;
     end
     
     function set.OnNewMacroMarkersFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewMacroMarkersFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewMacroMarkersFcn = func;
     end
     
     function set.OnNewCollisionDetectedFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewCollisionDetectedFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewCollisionDetectedFcn = func;
     end
     
     function set.OnNewOrbBasicMessageFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewOrbBasicMessageFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewOrbBasicMessageFcn = func;
     end
     
     function set.OnNewSelfLevelResultFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewSelfLevelResultFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewSelfLevelResultFcn = func;
     end
     
     function set.OnNewGyroAxisLimitExceededFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewGyroAxisLimitExceededFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewGyroAxisLimitExceededFcn = func;
     end
     
     function set.OnNewSpheroSoulDataFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewSpheroSoulDataFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewSpheroSoulDataFcn = func;
     end
     
     function set.OnNewLevelUpFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewLevelUpFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewLevelUpFcn = func;
     end
     
     function set.OnNewShieldDamageFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewShieldDamageFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewShieldDamageFcn = func;
     end
     
     function set.OnNewXpUpdateFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewXpUpdateFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewXpUpdateFcn = func;
     end
     
     function set.OnNewBoostUpdateFcn(s,func)
-      
-      if isa(func,'function_handle') || isempty(func)
-        s.OnNewBoostUpdateFcn = func;
-      end
+      assert( isa(func,'function_handle') || isempty(func),...
+        'Property must be a function handle or the empty matrix.');
+      s.OnNewBoostUpdateFcn = func;
     end
     
     % END Setters/Getters =================================================
@@ -705,72 +663,50 @@ classdef SpheroCore < handle & SpheroCoreConstants
   
   methods (Access = private)
     
-    % =====================================================================
-    % === Utility =========================================================
-    
+    %% === Utility ========================================================
     function WARN_PRINT(s,varargin)
-      
       if s.WARN_PRINT_FLAG
         fprintf('%s WARN  >> %s\n',mfilename,sprintf(varargin{:}));
       end
     end
     
     function DEBUG_PRINT(s,varargin)
-      %
       if s.DEBUG_PRINT_FLAG
         fprintf('%s DEBUG >> %s\n',mfilename,sprintf(varargin{:}));
       end
     end
     
     function DEBUG_PRINT_FUNCTION_NAME(s,stack)
-      
       if s.DEBUG_PRINT_FUNCTION_NAME_FLAG
         if ~isempty(stack)
           s.DEBUG_PRINT('%s()',stack(1).name);
         end
       end
-      
     end
     
     function INFO_PRINT(s,varargin)
-      %
       if s.INFO_PRINT_FLAG
         fprintf('%s INFO  >> %s\n',mfilename,sprintf(varargin{:}));
       end
     end
     
-    function integer = IntegerFromByteArray(s,byteArray,precision)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function integer = IntegerFromByteArray(s,byteArray,precision)      
       byteArray = uint8(byteArray);
       integer = typecast(byteArray,precision);
-      
       if strcmp('little-endian',s.machine_byte_order)
         integer = swapbytes(integer);
-      elseif isempty(strcmp('big-endian',s.machine_byte_order))
-        error('machine byte order property not set');
       end
-      
     end
     
-    function byteArray = ByteArrayFromInteger(s,integer,precision)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function byteArray = ByteArrayFromInteger(s,integer,precision)      
       integer = cast(integer,precision);
-      
       if strcmp('little-endian',s.machine_byte_order)
         integer = swapbytes(integer);
-      elseif isempty(strcmp('big-endian',s.machine_byte_order))
-        error('machine byte order property not set');
       end
-      
       byteArray = typecast(integer,'uint8');
-      
     end
     
     function [value,array] = ShiftOutInt16FromByteArray(s,byteArray,num)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
       if nargin < 3
         num = 1;
       end
@@ -789,8 +725,6 @@ classdef SpheroCore < handle & SpheroCoreConstants
     end
     
     function InitNewDataLogs(s)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
       s.time_log            = [s.time_log           ,nan];
       s.accel_raw_log       = [s.accel_raw_log      ,nan(3,1)];
       s.gyro_raw_log        = [s.gyro_raw_log       ,nan(3,1)];
@@ -804,15 +738,10 @@ classdef SpheroCore < handle & SpheroCoreConstants
       s.odo_log             = [s.odo_log            ,nan(2,1)];
       s.accel_one_log       = [s.accel_one_log      ,nan];
       s.vel_log             = [s.vel_log            ,nan(2,1)];
-      
     end
     
-    % END Utility =========================================================
     
-    
-    % =====================================================================
-    % === Protocol ========================================================
-    
+    %% === Protocol =======================================================
     function [fail,resp] = WriteClientCommandPacket(s,did,cid,data,...
         reset_timeout_flag,answer_flag)
       % SendCommand  Writes commands to the device.
@@ -966,7 +895,6 @@ classdef SpheroCore < handle & SpheroCoreConstants
         %  return;
         %end
         
-        % new code start
         % read data into buffer
         num_bytes = 5+dlen - length(s.buffer);
         new_bytes = [];
@@ -975,7 +903,6 @@ classdef SpheroCore < handle & SpheroCoreConstants
         end
         s.buffer = [s.buffer,new_bytes];
         s.num_skip = s.num_skip + num_bytes;
-        % new code end
         
         % move packet out of buffer
         packet = s.buffer(1:5+dlen);
@@ -1220,7 +1147,6 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %
       %   See also:
       %     SetDataStreaming
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
       
       mask = 0;
       mask2 = 0;
@@ -1319,12 +1245,8 @@ classdef SpheroCore < handle & SpheroCoreConstants
       s.data_streaming_info.num_bytes_per_frame = num_bytes;
     end
     
-    % END Protocol ========================================================
     
-    
-    % =====================================================================
-    % === Async Message Handlers ==========================================
-    
+    %% === Async Message Handlers ==========================================
     function HandlePowerNotification(s,data)
       % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
       
@@ -1539,7 +1461,6 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %     'print'
       %     'error-ascii'
       %     'error-binary'
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
       
       notify(s,'NewOrbBasicMessage');
       
@@ -1587,12 +1508,8 @@ classdef SpheroCore < handle & SpheroCoreConstants
       notify(s,'NewBoostUpdate');
     end
     
-    % END Async Message Handlers ==========================================
     
-    
-    % =====================================================================
-    % === Event Callback Dispatchers ======================================
-    
+    %% === Event Callback Dispatchers =====================================
     function DispatchNewPowerNotificationHandlers(s,src,evt)
       % DispatchNewHandlers
       % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
@@ -1865,18 +1782,12 @@ classdef SpheroCore < handle & SpheroCoreConstants
       end
       
     end
-    
-    % END Event Callback Dispatchers ======================================
-    
+
   end
   
   methods (Access = public) % sphero api functions
     
-    % =====================================================================
-    % === API Functions ===================================================
-    
-    % === === Core ========================================================
-    
+    %% === API Core =======================================================
     function fail = Ping(s,...
         reset_timeout_flag)
       % Ping  Pings the device - returns true is successful
@@ -1908,35 +1819,35 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   fields for each resource that encodes the version number
       %   according to the specified format.
       %
-      %   Properties:
-      %     version_info
-      %       This property is identical to the output version_info
+      % Properties:
+      %   version_info
+      %     This property is identical to the output version_info
       %
-      %   Outputs:
-      %     version_info
-      %       This is a struct with fields representing various version
-      %       information.
-      %     version_info.RECV
-      %       This record version number, currently set to 02h. This will
-      %       increase when more resources are added.
-      %     version_info.MDL
-      %       Model number; currently 02h for Sphero
-      %     version_info.HW
-      %       Hardware version code (ranges 1 through 9)
-      %     version_info.MSA_ver
-      %       Main Sphero App. version
-      %     version_info.MSA_rev
-      %       Main Sphero App. revision
-      %     version_info.BL
-      %       Bootloader version in packed nibble format (i.e. 32h is
-      %       version 3.2)
-      %     version_info.BAS
-      %       orbBasic version in packed nibble format (i.e. 4.4)
-      %     version_info.MACRO
-      %       Macro executive version in packed nibble format (4.4)
+      % Outputs:
+      %   version_info
+      %     This is a struct with fields representing various version
+      %     information.
+      %   version_info.RECV
+      %     This record version number, currently set to 02h. This will
+      %     increase when more resources are added.
+      %   version_info.MDL
+      %     Model number; currently 02h for Sphero
+      %   version_info.HW
+      %     Hardware version code (ranges 1 through 9)
+      %   version_info.MSA_ver
+      %     Main Sphero App. version
+      %   version_info.MSA_rev
+      %     Main Sphero App. revision
+      %   version_info.BL
+      %     Bootloader version in packed nibble format (i.e. 32h is
+      %     version 3.2)
+      %   version_info.BAS
+      %     orbBasic version in packed nibble format (i.e. 4.4)
+      %   version_info.MACRO
+      %     Macro executive version in packed nibble format (4.4)
       %
-      %   Examples:
-      %     TODO
+      % Examples:
+      %   TODO
       
       if nargin < 2
         reset_timeout_flag = [];
@@ -1954,7 +1865,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
         fail = true;
         return;
       end
-            
+      
       % process response data
       recv = data(1);
       mdl = data(2);
@@ -1994,23 +1905,19 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   later. Or just reboot as this setting is not persistent.
       %
       % TODO
-      
-      if nargin < 2
-        error('Input flag is required.');
-      end
+      assert( (nargin>=2),...
+        'Input ''flag'' is required.');
       if nargin < 3
         reset_timeout_flag = [];
       end
-      
-      if ~islogical(flag) || ~isscalar(flag)
-        error('Input flag must be a logical scalar.');
-      end
+      assert( islogical(flag) && isscalar(flag),...
+        'Input ''flag'' must be a logical scalar.');
       
       flag = uint8(flag);
       
       did = s.DID_CORE;
       cid = s.CMD_CONTROL_UART_TX;
-      data = [flag];
+      data = flag;
       
       fail = s.WriteClientCommandPacket(did,cid,data,...
         reset_timeout_flag,true);
@@ -2031,15 +1938,14 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   RN-42 within 60 seconds after power up, issue the command
       %   SN,mynewname and finish with r,1 to reboot the module.
       %
-      %   Inputs:
-      %     name
-      %       New Sphero name between 1 and 48 characters in length.
+      % Inputs:
+      %   name
+      %     New Sphero name between 1 and 48 characters in length.
       %
       % TODO
       
-      if nargin < 2
-        error('Input name is required.');
-      end
+      assert( nargin>=2,...
+        'Input ''name'' is required.');
       if nargin < 3
         reset_timeout_flag = [];
       end
@@ -2047,10 +1953,9 @@ classdef SpheroCore < handle & SpheroCoreConstants
         answer_flag = [];
       end
       
-      if ~ischar(name) || ~isvector(name) || ...
-          (length(name)<1) || (length(name)>48)
-        error('Input name must be a string of length in [1,48] characters.');
-      end
+      assert(ischar(name)&&isvector(name)&&(length(name)>=1)&&(length(name)<=48),...
+        'Input ''name'' must be a string of length in [1,48] characters.');
+      
       name_bytes = uint8(name);
       
       did = s.DID_CORE;
@@ -2073,16 +1978,16 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   interrogate their underlying Bluetooth stack for this
       %   information.
       %
-      %   Properties:
-      %     bluetooth_info
-      %       This is a struct identical to the output bluetooth_info
-      %       described below.
+      % Properties:
+      %   bluetooth_info
+      %     This is a struct identical to the output bluetooth_info
+      %     described below.
       %
-      %   Outputs:
-      %     bluetooth_info
-      %       TODO
+      % Outputs:
+      %   bluetooth_info
+      %     TODO
       
-
+      
       if nargin < 2
         reset_timeout_flag = [];
       end
@@ -2121,31 +2026,21 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   enable auto reconnect mode. For example, if time = 30 then the
       %   module will be attempt reconnecting 30 seconds after waking up.
       %   (refer to RN-APL-EVAL pg. 7 for more info)
-      
-      if nargin < 2
-        error('Input flag is required.');
-      end
+      assert( (nargin>=2),...
+        'Input ''flag'' is required.');
       if nargin < 3
-        time = [];
+        assert(flag,...
+          'Input ''time'' is required when ''flag'' is set.');
+        time = 0; % flag is not set, time is arbitrarily zero
       end
       if nargin < 4
         reset_timeout_flag = [];
       end
       
-      if ~islogical(flag) || ~isscalar(flag)
-        error('Input flag must be a logical scalar.');
-      end
-      if isempty(time)
-        if flag
-          error('Input time is required when flag is set.');
-        else
-          time = 0;
-        end
-      end
-      if ~isnumeric(time) || ~isscalar(time) || ...
-          (time<0) || (time>intmax('uint8'))
-        error('Input time must be a numeric scalar in [0,255] seconds.');
-      end
+      assert( islogical(flag) && isscalar(flag),...
+        'Input ''flag'' must be a logical scalar.');
+      assert(isnumeric(time)&&isscalar(time)&&(time>=0)&&(time<=intmax('uint8')),...
+        'Input ''time'' must be a numeric scalar in [0,255] seconds.');
             
       did = s.DID_CORE;
       cid = s.CMD_SET_AUTO_RECONNECT;
@@ -2159,21 +2054,21 @@ classdef SpheroCore < handle & SpheroCoreConstants
     function [fail,autoreconnect_info] = GetAutoReconnect(s,...
         reset_timeout_flag)
       % GetAutoReconnect  Get configuration of autoreconnect feature.
-      %   
-      %   Properties:
-      %     autoreconnect_info
-      %       This struct is identical to the autoreconnect_info output
-      %       described below.
       %
-      %   Outputs:
-      %     autoreconnect_info
-      %       Holds information about the autoreconnect feature
-      %       configuration.
-      %     autoreconnect_info.flag
-      %       Logical scalar representing the feature enable state
-      %     autoreconnect_info.time
-      %       Numeric scalar representing the duration between reconnect
-      %       attempts in seconds.
+      % Properties:
+      %   autoreconnect_info
+      %     This struct is identical to the autoreconnect_info output
+      %     described below.
+      %
+      % Outputs:
+      %   autoreconnect_info
+      %     Holds information about the autoreconnect feature
+      %     configuration.
+      %   autoreconnect_info.flag
+      %     Logical scalar representing the feature enable state
+      %   autoreconnect_info.time
+      %     Numeric scalar representing the duration between reconnect
+      %     attempts in seconds.
       %
       % DONE
       
@@ -2191,7 +2086,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       autoreconnect_info = [];
       if fail || isempty(data) || (xx~=length(data))
         fail = true;
-        return;        
+        return;
       end
       
       s.autoreconnect_info.flag = data(1)==1;
@@ -2207,30 +2102,34 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   This returns the current power state and some additional
       %   parameters to the Client. They are detailed below.
       %
-      %   Properties
-      %     power_state_info
-      %       Identical to power_state_info output described below
+      % Properties
+      %   power_state_info
+      %     Identical to power_state_info output described below
       %
-      %   Outputs:
-      %     power_state_info
-      %       TODO
-      %     power_state_info.rec_ver
-      %       TODO
-      %     power_state_info.power
-      %       TODO
-      %     power_state_info.batt_voltage
-      %       TODO
-      %     power_state_info.num_charges
-      %       TODO
-      %     power_state_info.time_since_charge
-      %       TODO
+      % Outputs:
+      %   power_state_info
+      %     TODO
+      %   power_state_info.rec_ver
+      %     TODO
+      %   power_state_info.power
+      %     TODO
+      %   power_state_info.batt_voltage
+      %     TODO
+      %   power_state_info.num_charges
+      %     TODO
+      %   power_state_info.time_since_charge
+      %     TODO
+      
+      if nargin < 2
+        reset_timeout_flag = [];
+      end
       
       did = s.DID_CORE;
       cid = s.CMD_GET_PWR_STATE;
       data = [];
       
       [fail,data] = s.WriteClientCommandPacket(did,cid,data,...
-        reset_timeout_flag,answer_flag);
+        reset_timeout_flag,true);
       
       power_state_info = [];
       if fail || isempty(data) || (8~=length(data))
@@ -2333,10 +2232,8 @@ classdef SpheroCore < handle & SpheroCoreConstants
       end
       
       % check valid input
-      if ~isnumeric(wakeup) || ~isscalar(wakeup) || ...
-          (wakeup < 0) || (wakeup > intmax('uint16'))
-        error('Input wakeup must be a scalar in [0,65535] seconds.');
-      end
+      assert(isnumeric(wakeup)&&isscalar(wakeup)&&(wakeup>=0)&&(wakeup<=intmax('uint16')),...
+        'Input ''wakeup'' must be a scalar in [0,65535] seconds.');
       wakeup = round(wakeup);
       
       % translate data format
@@ -2376,7 +2273,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       if nargin < 3
         reset_timeout_flag = [];
       end
-            
+      
       did = s.DID_CORE;
       cid = s.GET_POWER_TRIPS;
       data = [];
@@ -2425,24 +2322,18 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %     s.SetVoltageTripPoints(vlow,vcrit)
       %       TODO
       
-      if nargin < 3
-        error('Inputs vlow and vcrit are required.');
-      end
+      assert(nargin>=3,...
+        'Inputs ''vlow'' and ''vcrit'' are required.');
       if nargin < 4
         reset_timeout_flag = [];
       end
       
-      if ~isnumeric(vlow) || ~isscalar(vlow) || ...
-          (vlow < 6.75) || (vlow > 7.25)
-        error('Input vlow must be a numeric scalar in [6.75,7.25] volts.');
-      end
-      if ~isnumeric(vcrit) || ~isscalar(vcrit) || ...
-          (vcrit < 6.25) || (vcrit > 6.75)
-        error('Input vcrit must be a numeric scalar in [6.25,6.75] volts.');
-      end
-      if (vlow-vcrit < 0.25)
-        error('The difference in input values vlow-vcrit must be at least 0.25 volts.');
-      end
+      assert(isnumeric(vlow)&&isscalar(vlow)&&(vlow>=6.75)&&(vlow<=7.25),...
+        'Input ''vlow'' must be a numeric scalar in [6.75,7.25] volts.');
+      assert(isnumeric(vcrit)&&isscalar(vcrit)&&(vcrit>=6.25)&&(vcrit<=6.75),...
+        'Input ''vcrit'' must be a numeric scalar in [6.25,6.75] volts.');
+      assert((vlow-vcrit)>=0.25,...
+        'The difference in input values vlow-vcrit must be at least 0.25 volts.');
       
       vlow = s.ByteArrayFromInteger(round(100*vlow),'uint16');
       vcrit = s.ByteArrayFromInteger(round(100*vcrit),'uint16');
@@ -2452,34 +2343,34 @@ classdef SpheroCore < handle & SpheroCoreConstants
       data = [vlow,vcrit];
       
       fail = s.WriteClientCommandPacket(did,cid,data,...
-        reset_timeout_flag,true);     
+        reset_timeout_flag,true);
       
     end
     
     function fail = SetInactivityTimeout(s,timeout,...
         reset_timeout_flag)
-      % SetInactivityTimeout  TODO
-      %   To save battery power, Sphero normally goes to sleep after a period
-      %   of inactivity. From the factory this value is set to 600 seconds
-      %   (10 minutes) but this API command can alter it to any value of 60
-      %   seconds or greater. The inactivity timer is reset every time an API
-      %   command is received over Bluetooth or a shell command is executed
-      %   in User Hack mode. In addition, the timer is continually reset when
-      %   a macro is running unless the MF_STEALTH flag is set, and the same
-      %   for orbBasic unless the BF_STEALTH flag is set.
+      % SetInactivityTimeout  Set sleep timeout in seconds
+      %   To save battery power, Sphero normally goes to sleep after a
+      %   period of inactivity. From the factory this value is set to 600
+      %   seconds (10 minutes) but this API command can alter it to any
+      %   value of 60 seconds or greater. The inactivity timer is reset
+      %   every time an API command is received over Bluetooth or a shell
+      %   command is executed in User Hack mode. In addition, the timer is
+      %   continually reset when a macro is running unless the MF_STEALTH
+      %   flag is set, and the same for orbBasic unless the BF_STEALTH flag
+      %   is set.
       %
-      %   Inputs:
-      %     timeout (optional)
-      %       Inactivity timeout in [60,65535] seconds.
+      % Inputs:
+      %   timeout (optional)
+      %     Inactivity timeout in [60,65535] seconds.
       %
-      %   Usage:
-      %     s.SetInactivityTimeout()
-      %       Sets inactivity timeout to the default value, 600 seconds.
+      % Usage:
+      %   s.SetInactivityTimeout()
+      %     Sets inactivity timeout to the default value, 600 seconds.
       %
-      %     s.SetInactivityTimeout(2718)
-      %       Sets inactivity timeout to 2718 seconds (45 minutes and 18
-      %       seconds).
-      % DONE
+      %   s.SetInactivityTimeout(2718)
+      %     Sets inactivity timeout to 2718 seconds (45 minutes and 18
+      %     seconds).
       
       if nargin < 2
         timeout = 600;
@@ -2488,11 +2379,8 @@ classdef SpheroCore < handle & SpheroCoreConstants
         reset_timeout_flag = [];
       end
       
-      if ~isnumeric(timeout) || ~isscalar(timeout) || ...
-          (timeout < 60) || (timeout > 2^16-1)
-        error('Input timeout must be a numeric scalar in [60,%d] seconds.',...
-          intmax('uint16'));
-      end
+      assert(isnumeric(timeout)&&isscalar(timeout)&&(timeout>=60)&&(timeout<=(2^16-1)),...
+        sprintf('Input timeout must be a numeric scalar in [60,%d] seconds.',intmax('uint16')));
       timeout = round(timeout);
       
       timeout = s.ByteArrayFromInteger(timeout,'uint16');
@@ -2505,9 +2393,9 @@ classdef SpheroCore < handle & SpheroCoreConstants
         reset_timeout_flag,true);
       
     end
-    %{
-function JumpToBootloader(s,)
-      % Jump To Bootloader  TODO
+    
+    function JumpToBootloader(s)
+      % JumpToBootloader  NOT IMPLEMENTED
       %   This command requests a jump into the Bootloader to prepare for a
       %   firmware download. It always succeeds, because you can always
       %   stop where you are, shut everything down and transfer execution.
@@ -2520,12 +2408,12 @@ function JumpToBootloader(s,)
       %   doesn't implement the entire Core Device message set and if the
       %   battery is deemed too low to execute reflashing operations, all
       %   you can do is return to the Main Application.
-    
+      error('JumpToBootloader is not implemented');
     end
-    %}
+    
     function fail = PerformLevel1Diagnostics(s,...
         reset_timeout_flag)
-      % Perform Level 1 Diagnostics
+      % PerformLevel1Diagnostics
       %   This is a developer-level command to help diagnose aberrant
       %   behavior. Most system counters, process flags, and system states
       %   are decoded into human readable ASCII. There are two responses to
@@ -2536,7 +2424,6 @@ function JumpToBootloader(s,)
       %   The diagnostic message is printed to the command window as well
       %   as a text file in the current folder as indicated as indicated in
       %   the command window output.
-      % DONE
       
       if nargin < 2
         reset_timeout_flag = [];
@@ -2546,28 +2433,66 @@ function JumpToBootloader(s,)
       cid = s.CMD_RUN_L1_DIAGS;
       data = [];
       
+      [fail] = s.WriteClientCommandPacket(did,cid,data,...
+        reset_timeout_flag,true);
+      
+      
+      
+    end
+    
+    function [fail,data] = PerformLevel2Diagnostics(s,...
+        reset_timeout_flag)
+      % PerformLevel2Diagnostics
+      %   This is a developers-only command to help diagnose aberrant
+      %   behavior. It is much less informative than the Level 1 command
+      %   but it is in binary format and easier to parse. Here is the
+      %   layout of the data record which is currently 58h bytes long
+      
+      did = s.DID_CORE;
+      cid = s.CMD_RUN_L2_DIAGS;
+      data = [];
+      
+      [fail,data] = s.WriteClientCommandPacket(did,cid,data,...
+        reset_timeout_flag,true);
+      
+      if fail || isempty(data) || (88 ~= length(data))
+        fail = true;
+        return;
+      end
+      
+      s.disp_level2diagnostics(data);
+      
+    end
+    
+    function fail = ClearCounters(s,...
+        reset_timeout_flag)
+      % ClearCounters  TODO
+      %   This is a developers-only command to clear the various system
+      %   counters described in command 41h. It is denied when Sphero is in
+      %   Normal mode.
+      
+      if nargin < 2
+        reset_timeout_flag = [];
+      end
+      
+      did = s.DID_CORE;
+      cid = s.CMD_CLEAR_COUNTERS;
+      data = [];
+      
       fail = s.WriteClientCommandPacket(did,cid,data,...
         reset_timeout_flag,true);
       
     end
-    %{
-    function PerformLevel2Diagnostics(s,)
-      % PerformLevel2Diagnostics  TODO
-    end
     
-    function ClearCounters(s,)
-      % ClearCounters  TODO
-    end
-    %}
     function fail = AssignTimeValue(s,sphero_time,...
         reset_timeout_flag)
       % AssignTimeValue  Set Sphero's system clock timer.
-      %   Sphero contains a 32-bit counter that increments every millisecond.
-      %   It has no absolute temporal meaning, just a relative one. This
-      %   command assigns the counter a specific value for subsequent
-      %   sampling. Though it starts at zero when Sphero wakes up, assigning
-      %   it too high of a value with this command could cause it to roll
-      %   over.
+      %   Sphero contains a 32-bit counter that increments every
+      %   millisecond. It has no absolute temporal meaning, just a relative
+      %   one. This command assigns the counter a specific value for
+      %   subsequent sampling. Though it starts at zero when Sphero wakes
+      %   up, assigning it too high of a value with this command could
+      %   cause it to roll over.
       %
       %   Inputs:
       %     sphero_time (required)
@@ -2576,21 +2501,14 @@ function JumpToBootloader(s,)
       %   Usage:
       %     s.AssignTimeValue(2.718)
       %       Sets Sphero's clock to 2718 milliseconds.
-      % DONE
-      
-      if nargin < 2
-        % too few inputs
-        error('Input sphero_time is required.');
-      end
+      assert(nargin>=2,...
+        'Input ''sphero_time'' is required.');
       if nargin < 3
         reset_timeout_flag = [];
       end
       
-      if ~isnumeric(sphero_time) || ~isscalar(sphero_time) || ...
-          (sphero_time < 0) || (sphero_time > intmax('uint32'))
-        error('Input sphero_time must be a numeric scalar in [0,%f] seconds.',...
-          double(intmax('uint32'))/1000);
-      end
+      assert(isnumeric(sphero_time) && isscalar(sphero_time) && (sphero_time >= 0) && (sphero_time <= intmax('uint32'),...
+        sprintf('Input sphero_time must be a numeric scalar in [0,%f] seconds.',double(intmax('uint32'))/1000));
       
       sphero_time = round(sphero_time*1000);
       
@@ -2634,7 +2552,6 @@ function JumpToBootloader(s,)
       %     network_time
       %       This is a struct with fields offset and delay containing
       %       these values as described above in seconds.
-      % DONE
       
       if nargin < 2
         reset_timeout_flag = [];
@@ -2664,10 +2581,10 @@ function JumpToBootloader(s,)
         warning('Echoed client tx time mismatch.');
       end
       
-      ct = client_tx_time
-      cr = client_rx_time
-      st = sphero_tx_time
-      sr = sphero_rx_time
+      ct = client_tx_time;
+      cr = client_rx_time;
+      st = sphero_tx_time;
+      sr = sphero_rx_time;
       
       offset = 0.5 * ( (sr-ct) + (st-cr) );
       
@@ -2678,10 +2595,8 @@ function JumpToBootloader(s,)
       
     end
     
-    % END === Core ========================================================
     
-    % === === Sphero ======================================================
-    
+    %% API Sphero =========================================================
     function fail = SetHeading(s,heading,...
         reset_timeout_flag,answer_flag)
       % SetHeading  Command a new heading (planar orientation)
@@ -2975,10 +2890,9 @@ function JumpToBootloader(s,)
         answer_flag = [];
       end
       
-      if ~ischar(meth)
-        error('Input meth must be a collision detection method string, off, one, two, three, or four.');
-      end
-      
+      assert(ischar(meth)&&any(strcmp(meth,{'off','one','two','three','four'})),...
+        'Input ''meth'' must be a collision detection method string, ''off'', ''one'', ''two'', ''three'', or ''four''.');
+            
       switch meth
         case 'off'
           meth = s.COL_DET_METHOD_OFF;
@@ -2990,28 +2904,20 @@ function JumpToBootloader(s,)
           meth = s.COL_DET_METHOD_3;
         case 'four'
           meth = s.COL_DET_METHOD_4;
-        otherwise
-          error('Unsupported collision detection method.');
       end
       
-      if ~isnumeric(thresh) || ~isvector(thresh) || ~(2 == length(thresh)) || ...
-          any(thresh<0 | thresh>1)
-        error('Input thresh must be a numeric 2 vector in [0,1].');
-      end
+      assert(isnumeric(thresh)&&isvector(thresh)&&(2==length(thresh))&&all(thresh>=0&thresh<=1),...
+        'Input ''thresh'' must be a numeric 2 vector in [0,1].');
       if iscolumn(thresh), thresh = thresh'; end
       thresh = uint8(round(thresh*255));
       
-      if ~isnumeric(spd) || ~isvector(spd) || ~(2 == length(spd)) || ...
-          any(spd<0 | spd>1)
-        error('Input thresh must be a numeric 2 vector in [0,1].');
-      end
+      assert(isnumeric(spd)&&isvector(spd)&&(2==length(spd))&&all(spd>=0&spd<=1),...
+        'Input ''spd'' must be a numeric 2 vector in [0,1].');
       if iscolumn(spd), spd = spd'; end
       spd = uint8(round(spd*255));
       
-      if ~isnumeric(dead) || ~isscalar(dead) || dead < 0 || dead > 2.55
-        any(dead<0 | dead>1)
-        error('Input dead must be a numeric scalar in [0,2.55] seconds.');
-      end
+      assert(isnumeric(dead)&&isscalar(dead)&&(dead>=0)&&(dead<=2.55)&&all(dead>=0),...
+        'Input ''dead'' must be a numeric scalar in [0,2.55] seconds.');
       dead = uint8(round(dead*100));
       
       did = s.DID_SPHERO;
@@ -3345,12 +3251,10 @@ function Boost(s,)
       end
       
       % check input values
-      if ~isvector(powervec) || (2 ~= length(powervec)) || any([powervec < 0, powervec > 1])
-        error('Input powervec must be a numerical 2-vector with elements in [0,1].');
-      end
-      if ~isvector(modecellstr) || (2 ~= length(modecellstr)) || ~iscellstr(modecellstr)
-        error('Input modecellstr must be a 2 element cell array of strings.');
-      end
+      assert(isvector(powervec)&&(2==length(powervec))&&all(powervec>=0&powervec<=1),...
+        'Input ''powervec'' must be a numerical 2-vector with elements in [0,1].');
+      assert(isvector(modecellstr)&&(2==length(modecellstr))&&iscellstr(modecellstr),...
+        'Input ''modecellstr'' must be a 2 element cell array of strings.');
       
       pwr = uint8(round(255*powervec));
       
@@ -3377,10 +3281,9 @@ function Boost(s,)
       
       % check for existence of nan to indicate invalid mode string supplied
       % by caller
-      if any(isnan(md))
-        error('Invalid mode string. Valid entries are: off, forward, reverse, brake, ignore.');
-      end
-      
+      assert(all(~isnan(md)),...
+        'Invalid mode string. Valid entries are: ''off'', ''forward'', ''reverse'', ''brake'', ''ignore''.');
+            
       % put power and mode into left and right scalar vars for readability
       pl = pwr(1);
       pr = pwr(2);
@@ -3808,9 +3711,115 @@ function CommitRAMProgramtoFlash(s,)
     % END API Functions ===================================================
   end
   
-  methods (Static)
+  methods (Static=true,Access=private)
     
-    
+    function print_level2diagnostics(data)
+      
+      fprintf('LEVEL 2 DIAGNOSTICS:\n\n');
+      fprintf('%-20s | %-10s | %-20s\n',...
+        'NAME','VALUE','DESCRIPTION');
+      
+      % 00h RecVer Record version code – the following definition is for 01h
+      % 02h <empty> Reserved
+      
+      % 03h Rx_Good Good packets received (unsigned 32-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'Rx_Good',...
+        s.IntegerFromByteArray(data(3+(1:4)),'uint32'),...
+        'Good packets received');
+      
+      % 07h Rx_Bad_DID Packets with a bad Device ID (unsigned 32-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'Rx_Bad_DID',...
+        s.IntegerFromByteArray(data(7+(1:4)),'uint32'),...
+        'Packets with a bad Device ID');
+      
+      % 0Bh Rx_Bad_DLEN Packets with a bad data length (unsigned 32-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'Rx_Bad_DLEN',...
+        s.IntegerFromByteArray(data(11+(1:4)),'uint32'),...
+        'Packets with a bad data length');
+      
+      % 0Fh Rx_Bad_CID Packets with a bad Command ID (unsigned 32-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'Rx_Bad_CID',...
+        s.IntegerFromByteArray(data(15+(1:4)),'uint32'),...
+        'Packets with a bad Command ID');
+      
+      % 13h Rx_Bad_CHK Packets with a bad checksum (unsigned 32-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'Rx_Bad_CHK',...
+        s.IntegerFromByteArray(data(19+(1:4)),'uint32'),...
+        'Packets with a bad checksum');
+      
+      % 17h Rx_Buff_Ovr Receive buffer overruns (unsigned 32-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'Rx_Buff_Ovr',...
+        s.IntegerFromByteArray(data(23+(1:4)),'uint32'),...
+        'Receive buffer overruns');
+      
+      % 1Bh Tx_Msgs Messages transmitted (unsigned 32-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'Tx_Msgs',...
+        s.IntegerFromByteArray(data(+(1:4)),'uint32'),...
+        'Messages transmitted');
+      
+      % 1Fh Tx_Buff_Ovr Transmit buffer overruns (unsigned 32-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'Tx_Buff_Ovr',...
+        s.IntegerFromByteArray(data(31+(1:4)),'uint32'),...
+        'Transmit buffer overruns');
+      
+      % 23h LastBootReason Reason for last boot (8-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'LastBootReason',...
+        s.IntegerFromByteArray(data(35+1),'uint8'),...
+        'Reason for last boot');
+      
+      % 24h BootCounters 16 different counts of boot reasons
+      for jj=0:15
+        fprintf('%20s | % 10d | %20s\n',...
+          sprintf('BootCounters(%02d)',jj+1),...
+          s.IntegerFromByteArray(data((36+2*jj)+(1:2)),'uint16'),...
+          '16 different counts of boot reasons');
+      end
+      % 44h <empty> Reserved
+      % 46h ChargeCount Charge cycles (unsigned 16-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'ChargeCount',...
+        s.IntegerFromByteArray(data(70+(1:2)),'uint16'),...
+        'Charge cycles');
+      
+      % 48h SecondsSinceCharge Awake time in seconds since last charge (unsigned 16-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'SecondsSinceCharge',...
+        s.IntegerFromByteArray(data(72+(1:2)),'uint16'),...
+        'Awake time in seconds since last charge');
+      
+      % 4Ah SecondsOn Life awake time in seconds (unsigned 32-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'SecondsOn',...
+        s.IntegerFromByteArray(data(74+(1:4)),'uint32'),...
+        'Life awake time in seconds');
+      
+      % 4Eh DistanceRolled Distance rolled (unsigned 32-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'DistanceRolled',...
+        s.IntegerFromByteArray(data(78+(1:4)),'uint32'),...
+        'Distance rolled');
+      
+      % 52h Sensor Failures Count of I2C bus failures (unsigned 16-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'SensorFailures',...
+        s.IntegerFromByteArray(data(82+(1:2)),'uint16'),...
+        'Count of I2C bus failures');
+      
+      % 54h Gyro Adjust Count Lifetime count of automatic GACs (unsigned 32-bit value)
+      fprintf('%20s | % 10d | %20s\n',...
+        'GyroAdjustCount',...
+        s.IntegerFromByteArray(data(84+(1:4)),'uint32'),...
+        'Lifetime count of automatic GACs');
+    end
   end
   
 end
