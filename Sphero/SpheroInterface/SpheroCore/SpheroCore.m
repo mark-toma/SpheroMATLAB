@@ -2507,7 +2507,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
         reset_timeout_flag = [];
       end
       
-      assert(isnumeric(sphero_time) && isscalar(sphero_time) && (sphero_time >= 0) && (sphero_time <= intmax('uint32'),...
+      assert(isnumeric(sphero_time)&&isscalar(sphero_time)&&(sphero_time>=0)&&(sphero_time<=intmax('uint32')),...
         sprintf('Input sphero_time must be a numeric scalar in [0,%f] seconds.',double(intmax('uint32'))/1000));
       
       sphero_time = round(sphero_time*1000);
