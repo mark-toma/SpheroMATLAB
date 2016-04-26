@@ -7,16 +7,6 @@ classdef SpheroCore < handle & SpheroCoreConstants
   %   * Hardware communication with Sphero
   %   * Implementation of Sphero low-level API
   %   * Manage Sphero's state
-  %
-  %   Release
-  %
-  %     1.0   2015-08-29  Initial release
-  %
-  %
-  %   Changes
-  %
-  %     1.0   2015-08-29  Initial release
-  %
   
   properties (Hidden)
     
@@ -40,81 +30,21 @@ classdef SpheroCore < handle & SpheroCoreConstants
     %   setting so that they're always acknowledged and receive a response.
     answer_flag = true;
     
-    OnNewPowerNotificationFcn     = []; % User-defined callback triggered when async message received
-    OnNewLevel1DiagnosticFcn      = []; % User-defined callback triggered when async message received
-    OnNewDataStreamingFcn         = []; % User-defined callback triggered when async message received
-    OnNewConfigBlockContentsFcn   = []; % User-defined callback triggered when async message received
-    OnNewPreSleepWarningFcn       = []; % User-defined callback triggered when async message received
-    OnNewMacroMarkersFcn          = []; % User-defined callback triggered when async message received
-    OnNewCollisionDetectedFcn     = []; % User-defined callback triggered when async message received
-    OnNewOrbBasicMessageFcn       = []; % User-defined callback triggered when async message received
-    OnNewSelfLevelResultFcn       = []; % User-defined callback triggered when async message received
-    OnNewGyroAxisLimitExceededFcn = []; % User-defined callback triggered when async message received
-    OnNewSpheroSoulDataFcn        = []; % User-defined callback triggered when async message received
-    OnNewLevelUpFcn               = []; % User-defined callback triggered when async message received
-    OnNewShieldDamageFcn          = []; % User-defined callback triggered when async message received
-    OnNewXpUpdateFcn              = []; % User-defined callback triggered when async message received
-    OnNewBoostUpdateFcn           = []; % User-defined callback triggered when async message received
-    
-  end
-  
-  properties (Hidden, SetAccess = protected, GetAccess = protected)
-    
-    version = 1;
-    revision = 0;
-    release_date = '8/29/2015';
-    author = 'Mark Tomaszewski';
-    author_email = 'mark@mark-toma.com';
-    
-    time_init = [];
-    
-    % bt - Bluetooth object for Sphero communications.
-    %   This Bluetooth object provides the hardware interface to Sphero. It
-    %   must also be properly cleaned up when this object is destroyed by
-    %   explictly calling |delete()| on this object. If you run into
-    %   problems, you can free up Bluetooth connections by calling
-    %   |delete(instrfindall)| before creating a new object.
-    %
-    %   See also:
-    %     delete
-    bt = [];
-    
-    % num_skip - Number of bytes to skip reading in BytesAvailableFcn
-    %   The BytesAvailableFcn is set to trigger every byte to keep things
-    %   simple and stupid. However, when the protocol indicates number of
-    %   bytes remaining in an incoming message, they're read in a single
-    %   call to fread and this property is incremented by the number of
-    %   bytes read. Then, the BytesAvailableFcn ignores interrupts while
-    %   decrementing this property back to zero.
-    num_skip = 0;
-    
-    % buffer - Buffer (local) for incoming serial data
-    %   Here we use a double-buffered approach to implementing Sphero's
-    %   binary serial protocol.
-    buffer = [];
-    
-    % seq - Current command sequence number
-    %   Used to store the sequence number for the pending syncronous
-    %   command. With every command that is sent with answer_flag = true,
-    %   this is incremented and sent with the command packet in
-    %   WriteClientCommandPacket. Subsequently, WaitForCommandResponse is
-    %   called in which response_packet is polled (with timeout) until a
-    %   response_packet contains sequence number seq. This variable
-    %   increments on a ring of values: {1,2,...,254,255,1,2,...}
-    seq = 1;
-    
-    % response_packet - Current command response packet
-    %   Used to store the most recent command response packet when it is
-    %   recieved. WaitForCommandResponse polls this variable to identify a
-    %   recieved command response with sequence number seq. Upon success,
-    %   response_packet is initialized to the empty matrix again.
-    response_packet = [];
-    
-    % machine_byte_order - Characteristic of computer architecture.
-    %   Used by methods that convert typed integers to/from uint8 byte
-    %   arrays. The machine_byte_order, or endianness, is stored as either
-    %   'little-endian' or 'big-endian' in the constructor.
-    machine_byte_order = [];
+    NewPowerNotificationFcn     = []; % User-defined callback triggered when async message received
+    NewLevel1DiagnosticFcn      = []; % User-defined callback triggered when async message received
+    NewDataStreamingFcn         = []; % User-defined callback triggered when async message received
+    NewConfigBlockContentsFcn   = []; % User-defined callback triggered when async message received
+    NewPreSleepWarningFcn       = []; % User-defined callback triggered when async message received
+    NewMacroMarkersFcn          = []; % User-defined callback triggered when async message received
+    NewCollisionDetectedFcn     = []; % User-defined callback triggered when async message received
+    NewOrbBasicMessageFcn       = []; % User-defined callback triggered when async message received
+    NewSelfLevelResultFcn       = []; % User-defined callback triggered when async message received
+    NewGyroAxisLimitExceededFcn = []; % User-defined callback triggered when async message received
+    NewSpheroSoulDataFcn        = []; % User-defined callback triggered when async message received
+    NewLevelUpFcn               = []; % User-defined callback triggered when async message received
+    NewShieldDamageFcn          = []; % User-defined callback triggered when async message received
+    NewXpUpdateFcn              = []; % User-defined callback triggered when async message received
+    NewBoostUpdateFcn           = []; % User-defined callback triggered when async message received
     
   end
   
@@ -160,6 +90,8 @@ classdef SpheroCore < handle & SpheroCoreConstants
       'MACRO',-1);
     
     rgb = [0,1,0];
+    
+    rgb_user = [];
     
     % data_streaming_info - Holds streaming data state information.
     %   This information is set in a call to SetDataStreaming and used in
@@ -214,6 +146,21 @@ classdef SpheroCore < handle & SpheroCoreConstants
     
   end
   
+  properties (SetAccess=private, GetAccess=private)
+    
+    % bt - Bluetooth object for Sphero communications.
+    %   This Bluetooth object provides the hardware interface to Sphero. It
+    %   must also be properly cleaned up when this object is destroyed by
+    %   explictly calling |delete()| on this object. If you run into
+    %   problems, you can free up Bluetooth connections by calling
+    %   |delete(instrfindall)| before creating a new object.
+    %
+    %   See also:
+    %     delete
+    bt = [];
+    
+  end
+  
   properties (Hidden, SetAccess = private)
     
     time_log            = []; % Log of associated property (accumulated when data is streaming)
@@ -229,6 +176,24 @@ classdef SpheroCore < handle & SpheroCoreConstants
     odo_log             = []; % Log of associated property (accumulated when data is streaming)
     accel_one_log       = []; % Log of associated property (accumulated when data is streaming)
     vel_log             = []; % Log of associated property (accumulated when data is streaming)
+    
+    % time_init - Seconds since epoch (from built-in command 'now')
+    time_init = [];
+    
+    % num_skip - Number of bytes to skip reading in BytesAvailableFcn
+    num_skip = 0;
+    
+    % buffer - Buffer (local) for incoming serial data
+    buffer = [];
+    
+    % seq - Current command sequence number
+    seq = 1;
+    
+    % response_packet - Current command response packet
+    response_packet = [];
+    
+    % machine_byte_order - Characteristic of computer architecture.
+    machine_byte_order = [];
     
   end
   
@@ -274,21 +239,21 @@ classdef SpheroCore < handle & SpheroCoreConstants
         'Failed to set machine byte order.');
       
       % attach listeners
-      addlistener(s,'NewPowerNotification',@s.DispatchNewPowerNotificationHandlers);
-      addlistener(s,'NewLevel1Diagnostic',@s.DispatchNewLevel1DiagnosticHandlers);
-      addlistener(s,'NewDataStreaming',@s.DispatchNewDataStreamingHandlers);
-      addlistener(s,'NewConfigBlockContents',@s.DispatchNewConfigBlockContentsHandlers);
-      addlistener(s,'NewPreSleepWarning',@s.DispatchNewPreSleepWarningHandlers);
-      addlistener(s,'NewMacroMarkers',@s.DispatchNewMacroMarkersHandlers);
-      addlistener(s,'NewCollisionDetected',@s.DispatchNewCollisionDetectedHandlers);
-      addlistener(s,'NewOrbBasicMessage',@s.DispatchNewOrbBasicMessageHandlers);
-      addlistener(s,'NewSelfLevelResult',@s.DispatchNewSelfLevelResultHandlers);
-      addlistener(s,'NewGyroAxisLimitExceeded',@s.DispatchNewGyroAxisLimitExceededHandlers);
-      addlistener(s,'NewSpheroSoulData',@s.DispatchNewSpheroSoulDataHandlers);
-      addlistener(s,'NewLevelUp',@s.DispatchNewLevelUpHandlers);
-      addlistener(s,'NewShieldDamage',@s.DispatchNewShieldDamageHandlers);
-      addlistener(s,'NewXpUpdate',@s.DispatchNewXpUpdateHandlers);
-      addlistener(s,'NewBoostUpdate',@s.DispatchNewBoostUpdateHandlers);
+      addlistener(s,'NewPowerNotification'    ,@s.OnNewPowerNotification);
+      addlistener(s,'NewLevel1Diagnostic'     ,@s.OnNewLevel1Diagnostic);
+      addlistener(s,'NewDataStreaming'        ,@s.OnNewDataStreaming);
+      addlistener(s,'NewConfigBlockContents'  ,@s.OnNewConfigBlockContents);
+      addlistener(s,'NewPreSleepWarning'      ,@s.OnNewPreSleepWarning);
+      addlistener(s,'NewMacroMarkers'         ,@s.OnNewMacroMarkers);
+      addlistener(s,'NewCollisionDetected'    ,@s.OnNewCollisionDetected);
+      addlistener(s,'NewOrbBasicMessage'      ,@s.OnNewOrbBasicMessage);
+      addlistener(s,'NewSelfLevelResult'      ,@s.OnNewSelfLevelResult);
+      addlistener(s,'NewGyroAxisLimitExceeded',@s.OnNewGyroAxisLimitExceeded);
+      addlistener(s,'NewSpheroSoulData'       ,@s.OnNewSpheroSoulData);
+      addlistener(s,'NewLevelUp'              ,@s.OnNewLevelUp);
+      addlistener(s,'NewShieldDamage'         ,@s.OnNewShieldDamage);
+      addlistener(s,'NewXpUpdate'             ,@s.OnNewXpUpdate);
+      addlistener(s,'NewBoostUpdate'          ,@s.OnNewBoostUpdate);
       
       s.time_init = now * s.SECONDS_PER_DAY;
       
@@ -376,105 +341,69 @@ classdef SpheroCore < handle & SpheroCoreConstants
       s.sog = val * s.SOG_UNITS_PER_LSB;
     end
     
-    function set.OnNewPowerNotificationFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewPowerNotificationFcn = func;
+    function set.NewPowerNotificationFcn(s,func)
+      s.NewPowerNotificationFcn = s.AssertUserCallbackFcn(func,'NewPowerNotificationFcn');
     end
     
-    function set.OnNewLevel1DiagnosticFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewLevel1DiagnosticFcn = func;
+    function set.NewLevel1DiagnosticFcn(s,func)
+      s.NewLevel1DiagnosticFcn = s.AssertUserCallbackFcn(func,'NewLevel1DiagnosticFcn');
     end
     
-    function set.OnNewDataStreamingFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewDataStreamingFcn = func;
+    function set.NewDataStreamingFcn(s,func)
+      s.NewDataStreamingFcn = s.AssertUserCallbackFcn(func,'NewDataStreamingFcn');
     end
     
-    function set.OnNewConfigBlockContentsFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewConfigBlockContentsFcn = func;
+    function set.NewConfigBlockContentsFcn(s,func)
+      s.NewConfigBlockContentsFcn = s.AssertUserCallbackFcn(func,'NewConfigBlockContentsFcn');
     end
     
-    function set.OnNewPreSleepWarningFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewPreSleepWarningFcn = func;
+    function set.NewPreSleepWarningFcn(s,func)
+      s.NewPreSleepWarningFcn = s.AssertUserCallbackFcn(func,'NewPreSleepWarningFcn');
     end
     
-    function set.OnNewMacroMarkersFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewMacroMarkersFcn = func;
+    function set.NewMacroMarkersFcn(s,func)
+      s.NewMacroMarkersFcn = s.AssertUserCallbackFcn(func,'NewMacroMarkersFcn');
     end
     
-    function set.OnNewCollisionDetectedFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewCollisionDetectedFcn = func;
+    function set.NewCollisionDetectedFcn(s,func)
+      s.NewCollisionDetectedFcn = s.AssertUserCallbackFcn(func,'NewCollisionDetectedFcn');
     end
     
-    function set.OnNewOrbBasicMessageFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewOrbBasicMessageFcn = func;
+    function set.NewOrbBasicMessageFcn(s,func)
+      s.NewOrbBasicMessageFcn = s.AssertUserCallbackFcn(func,'NewOrbBasicMessageFcn');
     end
     
-    function set.OnNewSelfLevelResultFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewSelfLevelResultFcn = func;
+    function set.NewSelfLevelResultFcn(s,func)
+      s.NewSelfLevelResultFcn = s.AssertUserCallbackFcn(func,'NewSelfLevelResultFcn');
     end
     
-    function set.OnNewGyroAxisLimitExceededFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewGyroAxisLimitExceededFcn = func;
+    function set.NewGyroAxisLimitExceededFcn(s,func)
+      s.NewGyroAxisLimitExceededFcn = s.AssertUserCallbackFcn(func,'NewGyroAxisLimitExceededFcn');
     end
     
-    function set.OnNewSpheroSoulDataFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewSpheroSoulDataFcn = func;
+    function set.NewSpheroSoulDataFcn(s,func)
+      s.NewSpheroSoulDataFcn = s.AssertUserCallbackFcn(func,'NewSpheroSoulDataFcn');
     end
     
-    function set.OnNewLevelUpFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewLevelUpFcn = func;
+    function set.NewLevelUpFcn(s,func)
+      s.NewLevelUpFcn = s.AssertUserCallbackFcn(func,'NewLevelUpFcn');
     end
     
-    function set.OnNewShieldDamageFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewShieldDamageFcn = func;
+    function set.NewShieldDamageFcn(s,func)
+      s.NewShieldDamageFcn = s.AssertUserCallbackFcn(func,'NewShieldDamageFcn');
     end
     
-    function set.OnNewXpUpdateFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewXpUpdateFcn = func;
+    function set.NewXpUpdateFcn(s,func)
+      s.NewXpUpdateFcn = s.AssertUserCallbackFcn(func,'NewXpUpdateFcn');
     end
     
-    function set.OnNewBoostUpdateFcn(s,func)
-      assert( isa(func,'function_handle') || isempty(func),...
-        'Property must be a function handle or the empty matrix.');
-      s.OnNewBoostUpdateFcn = func;
+    function set.NewBoostUpdateFcn(s,func)
+      s.NewBoostUpdateFcn = s.AssertUserCallbackFcn(func,'NewBoostUpdateFcn');
     end
     
-    % END Setters/Getters =================================================
-    
-    
-    % =====================================================================
-    % === Utility =========================================================
-    
+    %% === Utility ========================================================
     function ClearLogs(s)
       % ClearLogs  Initializes the data logs to empty - discards data.
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
       
       s.time_log            = [];
       s.accel_raw_log       = [];
@@ -492,22 +421,13 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
     end
     
-    % END Utility =========================================================
-    
-    % =====================================================================
     % === Device Control ==================================================
-    
     function fail = ConnectDevice(s,remote_name)
-      %Connect Device
-      % Connects to Sphero using Matlab Bluetooth object (bt property).
-      % Optional parameter |remote_name| specifies a partial string
-      %occuring in the
-      % remote name of the desired bluetooth device.
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % init outputs
+      % Connect Device
+      %   Connects to Sphero using Matlab Bluetooth object (bt property).
+      %   Optional parameter |remote_name| specifies a partial string
+      %   occuring in the remote name of the desired bluetooth device.
       fail = true;
-      
       % set user-supplied remote_name empty so it isn't used later
       if nargin < 2
         remote_name = [];
@@ -600,7 +520,6 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
     end
     
-    
     function hw = FindSpheroDevice(s,remote_name)
       % FindSpheroDevice  Returns a struct of Bluetooth device info
       %   Optional input parameter remote_name specifies a partial match to
@@ -656,9 +575,6 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
     end
     
-    
-    % END Device Control ==================================================
-    
   end
   
   methods (Access = private)
@@ -690,7 +606,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       end
     end
     
-    function integer = IntegerFromByteArray(s,byteArray,precision)      
+    function integer = IntegerFromByteArray(s,byteArray,precision)
       byteArray = uint8(byteArray);
       integer = typecast(byteArray,precision);
       if strcmp('little-endian',s.machine_byte_order)
@@ -698,7 +614,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       end
     end
     
-    function byteArray = ByteArrayFromInteger(s,integer,precision)      
+    function byteArray = ByteArrayFromInteger(s,integer,precision)
       integer = cast(integer,precision);
       if strcmp('little-endian',s.machine_byte_order)
         integer = swapbytes(integer);
@@ -837,99 +753,74 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   does is forward incoming bytes from the incoming buffer of |bt|
       %   to a property of this class named |buffer| before calling the
       %   |SpinProtocol| method take action on the incoming data.
-      %
-      %   See also:
-      %     buffer
-      %     SpinProtocol
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
       
-      % push one byte into local buffer, buf
+      % push one byte onto local buffer
       if s.num_skip > 0
         s.num_skip = s.num_skip - 1;
       else
         s.buffer = [ s.buffer , fread(s.bt,1,'uint8') ];
-        
-        % spin protocol engine
         s.SpinProtocol();
       end
     end
     
     function SpinProtocol(s)
-      % SpinProtocol  TODO
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
+      % SpinProtocol  Reads local input buffer to parse RSP and MSG
+      %  Invoked by the Bluetooth callback BytesAvailableFcn
       
-      if length(s.buffer) < 6
-        return;
-      end
+      if length(s.buffer) < 6, return; end % bail if not enough data for a packet
       
+      % grab first two bytes and bail on protocol fault
       sop1 = s.buffer(1);
       sop2 = s.buffer(2);
-      
       if sop1 ~= s.SOP1
-        % throw away byte
         s.DEBUG_PRINT('Missed SOP1 byte');
         s.buffer = s.buffer(2:end);
         return;
       elseif ~any( sop2 == [s.SOP2_RSP,s.SOP2_ASYNC] )
-        % throw away bytes
         s.DEBUG_PRINT('Missed SOP2 byte');
         s.buffer = s.buffer(3:end);
         return;
       end
+      % sop1 and sop2 are both valid now
       
-      % sop1 and sop2 are both valid now ...
-      % proceed depending on message type
-      
+      % proceed to read in
       if sop2 == s.SOP2_RSP
-        %s.DEBUG_PRINT('recieved response message');
         % response format
         % [ sop1 | sop2 | mrsp | seq | dlen | <data> | chk ]
         
         mrsp = s.buffer(3);
         seq = s.buffer(4);
-        
         dlen = s.buffer(5);
-        %if length(s.buffer) < (5+dlen)
-        %  s.DEBUG_PRINT('Waiting for response data');
-        %  % buffer isn't here yet
-        %  return;
-        %end
         
         % read data into buffer
+        % if the whole packet isn't in the buffer yet, this part will
+        % attempt a blocking read on the assumed missing bytes.
         num_bytes = 5+dlen - length(s.buffer);
         new_bytes = [];
         if num_bytes > 0
           new_bytes = fread(s.bt,num_bytes,'uint8')';
         end
         s.buffer = [s.buffer,new_bytes];
-        s.num_skip = s.num_skip + num_bytes;
+        s.num_skip = s.num_skip + num_bytes; % adjustment for BytesAvailableFcn to ignore the triggers for bytes read manually
         
         % move packet out of buffer
         packet = s.buffer(1:5+dlen);
         s.buffer = s.buffer(5+dlen+1:end);
         
-        if (dlen-1) < 1
-          % no data
-          data = [];
-        else
-          % at least one element of data
-          data = packet(6:end-1);
-        end
-        
+        % grab data, chk, validate chk
+        data = packet(6:end-1);
         chk = packet(end);
         chk_cmp = bitcmp(mod(sum(uint8(packet(3:end-1))),256),'uint8');
+        if chk ~= chk_cmp, return; end
         
-        if chk ~= chk_cmp
-          % checksum failure
-          return;
-        else
-          s.response_packet = packet;
-        end
-        
-        s.DEBUG_PRINT('received packet: %s',sprintf('%0.2X ',packet));
+        s.response_packet.sop1 = sop1;
+        s.response_packet.sop2 = sop2;
+        s.response_packet.mrsp = mrsp;
+        s.response_packet.data = data;
+        s.response_packet.chk = chk;
+        s.response_packet.seq = seq;
         
       elseif sop2 == s.SOP2_ASYNC
-        %s.DEBUG_PRINT('recieved async message');
         % async message format
         % [ sop1 | sop2 | id_code | dlen_msb | dlen_lsb | <data> | chk ]
         
@@ -938,42 +829,26 @@ classdef SpheroCore < handle & SpheroCoreConstants
         dlen_lsb = s.buffer(5);
         dlen = s.IntegerFromByteArray([dlen_msb,dlen_lsb],'uint16');
         
-        %if length(s.buffer) < (5+dlen)
-        %  % buffer isn't here yet
-        %  s.DEBUG_PRINT('Waiting for asynch data');
-        %  return;
-        %end
-        
-        % new code start
         % read data into buffer
+        % if the whole packet isn't in the buffer yet, this part will
+        % attempt a blocking read on the assumed missing bytes.
         num_bytes = double(5+dlen - length(s.buffer));
         new_bytes = [];
         if num_bytes > 0
           new_bytes = fread(s.bt,num_bytes,'uint8')';
         end
         s.buffer = [s.buffer,new_bytes];
-        s.num_skip = s.num_skip + num_bytes;
-        % new code end
+        s.num_skip = s.num_skip + num_bytes; % adjustment for BytesAvailableFcn to ignore the triggers for bytes read manually
         
         % move packet out of buffer
         packet = s.buffer(1:5+dlen);
         s.buffer = s.buffer(5+dlen+1:end);
         
-        if (dlen-1) < 1
-          % no data
-          data = [];
-        else
-          % at least one element of data
-          data = packet(6:end-1);
-        end
-        
+        % grab data, chk, validate chk
+        data = packet(6:end-1);
         chk = packet(end);
         chk_cmp = bitcmp(mod(sum(uint8(packet(3:end-1))),256),'uint8');
-        
-        if chk ~= chk_cmp
-          % checksum failure
-          return;
-        end
+        if chk ~= chk_cmp, return; end
         
         s.DEBUG_PRINT('received packet: %s',sprintf('%0.2X ',packet));
         
@@ -982,29 +857,29 @@ classdef SpheroCore < handle & SpheroCoreConstants
           case s.ID_CODE_POWER_NOTIFICATIONS
             s.HandlePowerNotification(data);
           case s.ID_CODE_LEVEL_1_DIAGNOSTIC_RESPONSE
-            s.HandleLevel1DiagnosticResponse(data);
+            s.HandleLevel1Diagnostic(data);
           case s.ID_CODE_SENSOR_DATA_STREAMING
-            s.HandleDataStreamingMessage(data);
+            s.HandleDataStreaming(data);
           case s.ID_CODE_CONFIG_BLOCK_CONTENTS
-            s.HandleConfigBlockContentsMessage(data);
+            s.HandleConfigBlockContents(data);
           case s.ID_CODE_PRE_SLEEP_WARNING
-            s.HandlePreSleepWarningMessage(data);
+            s.HandlePreSleepWarning(data);
           case s.ID_CODE_MACRO_MARKERS
-            s.HandleMacroMarkersMessage(data);
+            s.HandleMacroMarkers(data);
           case s.ID_CODE_COLLISION_DETECTED
-            s.HandleCollisionDetectedMessage(data);
+            s.HandleCollisionDetected(data);
           case s.ID_CODE_ORB_BASIC_PRINT_MESSAGE
-            s.HandleOrbBasicMessage(data,'print');
+            s.HandleOrbBasic(data,'print');
           case s.ID_CODE_ORB_BASIC_ERROR_MESSAGE_ASCII
-            s.HandleOrbBasicMessage(data,'error-ascii');
+            s.HandleOrbBasic(data,'error-ascii');
           case s.ID_CODE_ORB_BASIC_ERROR_MESSAGE_BINARY
-            s.HandleOrbBasicMessage(data,'error-binary');
+            s.HandleOrbBasic(data,'error-binary');
           case s.ID_CODE_SELF_LEVEL_RESULT
-            s.HandleSelfLevelResultMessage(data);
+            s.HandleSelfLevelResult(data);
           case s.ID_CODE_GYRO_AXIS_LIMIT_EXCEEDED
-            s.HandleGyroAxisLimitExceededMessage(data);
+            s.HandleGyroAxisLimitExceeded(data);
           case s.ID_CODE_SPHEROS_SOUL_DATA
-            s.HandleSpheroSoulDataMessage(data);
+            s.HandleSpheroSoulData(data);
           case s.ID_CODE_LEVEL_UP_NOTIFICATION
             s.HandleLevelUpNotification(data);
           case s.ID_CODE_SHIELD_DAMAGE_NOTIFICATION
@@ -1016,15 +891,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
           otherwise
             s.DEBUG_PRINT('Unsupported asyncronous message!');
         end
-        
-        
-      else
-        % wt-actual-f happa?
-        % we should never get here
-        
       end
-      
-      
     end
     
     function [fail,resp] = WaitForCommandResponse(s)
@@ -1033,39 +900,24 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   WriteClientCommandPacket if answer_flag is set. It polls response_packet
       %   until SpinProtocol has set it with a packet comes in with seq ==
       %   seq.
-      %
-      %   See also:
-      %     WriteClientCommandPacket
-      %     SpinProtocol
-      %     answer_flag
-      %     response_packet
-      %     seq
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
       
       % response format
       % [ sop1 | sop2 | mrsp | seq | dlen | <data> | chk ]
-      
       fail = true;
       resp = [];
       
       tic; t = 0;
       while fail && toc < s.WAIT_FOR_CMD_RSP_TIMEOUT
         
-        if ~isempty(s.response_packet) && s.response_packet(4) == s.seq
+        if ~isempty(s.response_packet) && (s.response_packet.seq == s.seq)
           
           % check for successful response
           fail = s.CheckResponseFailure();
-          
-          % do stuff with this response_packet data
-          dlen = s.response_packet(5);
-          if  ~fail && dlen > 1
-            % there's response data to pass back to the command caller
-            resp = s.response_packet(6:5+dlen-1);
+          dlen = s.response_packet.dlen;
+          if  ~fail && (dlen > 0)
+            resp = s.response_packet.data;
           end
-          
-          % reset response_packet to empty for next time
           s.response_packet = [];
-          
         else
           pause(s.WAIT_FOR_CMD_RSP_DELAY);
         end
@@ -1086,18 +938,11 @@ classdef SpheroCore < handle & SpheroCoreConstants
     end
     
     function  fail = CheckResponseFailure(s)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
       fail = true;
-      mrsp = s.response_packet(3);
-      if mrsp == 0
-        fail = false;
-        return;
-      end
-      
-      % notify failure reason
-      switch mrsp
-        
+      switch s.response_packet.mrsp
+        case 0
+          fail = false;
+          return;
         case s.ORBOTIX_RSP_CODE_EGEN
           msg = s.ORBOTIX_RSP_CODE_EGEN;
         case s.ORBOTIX_RSP_CODE_ECHKSUM
@@ -1133,9 +978,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
         otherwise
           msg = 'Unknown failure.';
       end
-      
       s.WARN_PRINT('Command failed: %s',msg);
-      
     end
     
     
@@ -1245,72 +1088,49 @@ classdef SpheroCore < handle & SpheroCoreConstants
       s.data_streaming_info.num_bytes_per_frame = num_bytes;
     end
     
-    
-    %% === Async Message Handlers ==========================================
+    %% === Async Message Handlers =========================================
+    % These functions are called by SpinProtocol when an async MSG is
+    % parsed in from the bluetooth input buffer. Each handler performs
+    % necessary processing on its message data before triggering its
+    % corresponding event with notify(s,NewMSG). Then the NewMSG events
+    % trigger the OnNewMSG listeners wherein user-specified callbacks
+    % stored in the NewMSGFcn properties are called is they have been set.
     function HandlePowerNotification(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
       notify(s,'NewPowerNotification');
-      
     end
     
-    function HandleLevel1DiagnosticResponse(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function HandleLevel1Diagnostic(s,data)
       header = 'Sphero Level 1 Diagnostics';
       date_string = datestr(now,'yyyy-mm-dd_HH-MM-SS-FFF');
-      
-      
-      % display command windows output
-      fprintf('%s\n\t%s\n\n%s\n',header,date_string,data);
-      
-      % attempt to write a log file
+      % check for existing file (unlikely to happen)
       fname = sprintf('Sphero-Level-1-Diagnostics_%s.txt',...
         date_string);
-      
       if exist(fname,'file')
         warning('Failed to create log file:\n\t%s\n',fname);
         return;
       end
-      
+      % open file
       fid = fopen(fname,'w');
-      
       if fid < 0
         warning('Failed to create log file:\n\t%s\n',fname);
         return;
       end
-      
+      % write to file
       fprintf(fid,'%s\n\t%s\n\n%s\n',header,date_string,data);
-      
-      fprintf('Succeeded in writing log file:\n\t%s\n',fname);
-      
       fclose(fid);
-      
       notify(s,'NewLevel1Diagnostic');
-      
     end
     
-    function HandleDataStreamingMessage(s,data)
-      % HandleDataStreamingMessage
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      
+    function HandleDataStreaming(s,data)
       if ~s.data_streaming_info.is_enabled
         return;
       elseif length(data) ~= s.data_streaming_info.num_bytes_per_frame * s.data_streaming_info.frame_count
-        % fail softly
-        %fprintf('length(data) = %d\tnum_bytes = %d\n',...
-        %  length(data),s.data_streaming_info.num_bytes_per_frame*s.data_streaming_info.frame_count);
         return;
       end
-      
       sensors = s.data_streaming_info.sensors;
-      
       BYTES_PER_VALUE = 2;
-      
       s.DEBUG_PRINT('streaming data length: %d',length(data));
-      
-      if length(sensors) == 0
+      if iempty(sensors)
         % no sensors... wtf?
         return;
       elseif length(sensors) ~= length(data)/BYTES_PER_VALUE
@@ -1388,64 +1208,45 @@ classdef SpheroCore < handle & SpheroCoreConstants
               % bad sensor given
               s.INFO_PRINT('Sensor %s not supported!',sensor);
           end
-          
         end
-        
         s.data_streaming_info.num_samples = s.data_streaming_info.num_samples + 1;
-        
       end
-      
       % turn data streaming off
       if s.data_streaming_info.num_samples == s.data_streaming_info.frame_count*s.data_streaming_info.packet_count
         s.data_streaming_info.is_enabled = false;
       end
-      
-      % trigger NewDataStreaming
       notify(s,'NewDataStreaming');
-      
     end
     
-    function HandleConfigBlockContentsMessage(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function HandleConfigBlockContents(s,data)
       notify(s,'NewConfigBlockContents');
     end
     
-    function HandlePreSleepWarningMessage(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function HandlePreSleepWarning(s,data)
       notify(s,'NewPreSleepWarning');
     end
     
-    function HandleMacroMarkersMessage(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function HandleMacroMarkers(s,data)
       notify(s,'NewMacroMarkers');
     end
     
-    function HandleCollisionDetectedMessage(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      %fprintf('Handle collision detection\n');
-      
-      
+    function HandleCollisionDetected(s,data)
       if ~s.collision_info.is_enabled
         return;
       elseif length(data) ~= s.COL_DET_NUM_BYTES
         return;
       end
-      
+      %
       x = s.IntegerFromByteArray(data(1:2),'int16');
       y = s.IntegerFromByteArray(data(3:4),'int16');
       z = s.IntegerFromByteArray(data(5:6),'int16');
       direction = double([x;y;z]);
-      
       ax = s.IntegerFromByteArray(data(7),'uint8');
       xmag = s.IntegerFromByteArray(data(8:9),'uint16');
       ymag = s.IntegerFromByteArray(data(10:11),'uint16');
       speed = s.IntegerFromByteArray(data(12),'uint8');
       timestamp = s.IntegerFromByteArray(data(13:16),'uint32');
-      
+      % assign to info property struct
       s.collision_info.direction = direction/norm(direction,2);
       s.collision_info.axis = ax;
       s.collision_info.planar_mag = [xmag;ymag];
@@ -1456,338 +1257,89 @@ classdef SpheroCore < handle & SpheroCoreConstants
     end
     
     function HandleOrbBasicMessage(s,data,spec)
-      % HandleOrbBasicMessage
-      %   spec specifies the type of message and can take string values:
-      %     'print'
-      %     'error-ascii'
-      %     'error-binary'
-      
+      % spec is in {'print', 'error-ascii', 'error-binary'}
       notify(s,'NewOrbBasicMessage');
-      
     end
     
-    function HandleSelfLevelResultMessage(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function HandleSelfLevelResult(s,data)
       notify(s,'NewSelfLevelResult');
     end
     
-    function HandleGyroAxisLimitExceededMessage(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function HandleGyroAxisLimitExceeded(s,data)
       notify(s,'NewGyroAxisLimitExceeded');
     end
     
-    function HandleMessage(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function HandleSpheroSoulData(s,data)
       notify(s,'NewSpheroSoulData');
     end
     
-    function HandleLevelUpNotification(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function HandleLevelUp(s,data)
       notify(s,'NewLevelUp');
     end
     
-    function HandleShieldDamageNotification(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function HandleShieldDamage(s,data)
       notify(s,'NewShieldDamage');
     end
     
-    function HandleXpUpdateNotification(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function HandleXpUpdate(s,data)
       notify(s,'NewXpUpdate');
     end
-    
-    function HandleBoostUpdateNotification(s,data)
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
+    function HandleBoostUpdate(s,data)
       notify(s,'NewBoostUpdate');
     end
     
-    
     %% === Event Callback Dispatchers =====================================
-    function DispatchNewPowerNotificationHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewPowerNotificationFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewPowerNotificationFcn(src,evt);
-      catch e
-      end
-      
+    function OnNewPowerNotification(s)
+      s.InvokeUserCallbackFcn(s.NewPowerNotificationFcn,s,[],'NewPowerNotificationFcn');
+    end
+    function OnNewLevel1Diagnostic(s)
+      s.InvokeUserCallbackFcn(s.NewLevel1DiagnosticFcn,s,[],'NewLevel1DiagnosticFcn');
+    end
+    function OnNewDataStreaming(s)
+      s.InvokeUserCallbackFcn(s.OnNewDataStreamingFcn,s,[],'NewDataStreamingFcn');
+    end
+    function OnNewConfigBlockContents(s)
+      s.InvokeUserCallbackFcn(s.OnNewConfigBlockContentsFcn,s,[],'NewConfigBlockContentsFcn');
+    end
+    function OnNewPreSleepWarning(s)
+      s.InvokeUserCallbackFcn(s.OnNewPreSleepWarningFcn,s,[],'NewPreSleepWarningFcn');
+    end
+    function OnNewMacroMarkers(s)
+      s.InvokeUserCallbackFcn(s.OnNewMacroMarkersFcn,s,[],'NewMacroMarkersFcn');
+    end
+    function OnNewCollisionDetected(s)
+      s.InvokeUserCallbackFcn(s.OnNewCollisionDetectedFcn,s,[],'NewCollisionDetectedFcn');
+    end
+    function OnNewOrbBasicMessage(s)
+      s.InvokeUserCallbackFcn(s.OnNewOrbBasicMessageFcn,s,[],'NewOrbBasicMessageFcn');
+    end
+    function OnNewSelfLevelResult(s)
+      s.InvokeUserCallbackFcn(s.OnNewSelfLevelResultFcn,s,[],'NewSelfLevelResultFcn');
+    end
+    function OnNewGyroAxisLimitExceeded(s)
+      s.InvokeUserCallbackFcn(s.OnNewGyroAxisLimitExceededFcn,s,[],'NewGyroAxisLimitExceededFcn');
+    end
+    function OnNewSpheroSoulData(s)
+      s.InvokeUserCallbackFcn(s.OnNewSpheroSoulDataFcn,s,[],'NewSpheroSoulDataFcn');
+    end
+    function OnNewLevelUp(s)
+      s.InvokeUserCallbackFcn(s.OnNewLevelUpFcn,s,[],'NewLevelUpFcn');
+    end
+    function OnNewShieldDamage(s)
+      s.InvokeUserCallbackFcn(s.OnNewShieldDamageFcn,s,[],'NewShieldDamageFcn');
+    end
+    function OnNewXpUpdate(s)
+      s.InvokeUserCallbackFcn(s.OnNewXpUpdateFcn,s,[],'NewXpUpdateFcn');
+    end
+    function OnNewBoostUpdate(s)
+      s.InvokeUserCallbackFcn(s.OnNewBoostUpdateFcn,s,[],'NewBoostUpdateFcn');
     end
     
-    function DispatchNewLevel1DiagnosticHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewLevel1DiagnosticFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewLevel1DiagnosticFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewDataStreamingHandlers(s,src,evt)
-      % DispatchNewDataStreamingHandlers  Dispatches new streaming data
-      % functions
-      %   Listens to NewDataStreaming event and dispatches
-      %   OnNewDataStreamingFcn
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewDataStreamingFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewDataStreamingFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewConfigBlockContentsHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewConfigBlockContentsFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewConfigBlockContentsFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewPreSleepWarningHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewPreSleepWarningFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewPreSleepWarningFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewMacroMarkersHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewMacroMarkersFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewMacroMarkersFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewCollisionDetectedHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewCollisionDetectedFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewCollisionDetectedFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewOrbBasicMessageHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewOrbBasicMessageFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewOrbBasicMessageFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewSelfLevelResultHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewSelfLevelResultFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewSelfLevelResultFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewGyroAxisLimitExceededHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewGyroAxisLimitExceededFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewGyroAxisLimitExceededFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewSpheroSoulDataHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewSpheroSoulDataFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewSpheroSoulDataFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewLevelUpHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewLevelUpFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewLevelUpFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewShieldDamageHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewShieldDamageFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewShieldDamageFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewXpUpdateHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewXpUpdateFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewXpUpdateFcn(src,evt);
-      catch e
-      end
-      
-    end
-    
-    function DispatchNewBoostUpdateHandlers(s,src,evt)
-      % DispatchNewHandlers
-      % s.DEBUG_PRINT_FUNCTION_NAME(dbstack(1));
-      
-      % bail out if no callback is specified
-      if isempty(s.OnNewBoostUpdateFcn)
-        return;
-      end
-      
-      % execute callbacks
-      % fail softly
-      try
-        s.OnNewBoostUpdateFcn(src,evt);
-      catch e
-      end
-      
-    end
-
   end
   
-  methods (Access = public) % sphero api functions
+  methods (Access = public)
     
-    %% === API Core =======================================================
+    %% === API Core Device ================================================
     function fail = Ping(s,...
         reset_timeout_flag)
       % Ping  Pings the device - returns true is successful
@@ -2041,7 +1593,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
         'Input ''flag'' must be a logical scalar.');
       assert(isnumeric(time)&&isscalar(time)&&(time>=0)&&(time<=intmax('uint8')),...
         'Input ''time'' must be a numeric scalar in [0,255] seconds.');
-            
+      
       did = s.DID_CORE;
       cid = s.CMD_SET_AUTO_RECONNECT;
       data = [flag,time];
@@ -2596,7 +2148,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
     end
     
     
-    %% API Sphero =========================================================
+    %% === API Sphero Device ==============================================
     function fail = SetHeading(s,heading,...
         reset_timeout_flag,answer_flag)
       % SetHeading  Command a new heading (planar orientation)
@@ -2670,7 +2222,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
     
     function fail = SetRotationRate(s,rate,...
         reset_timeout_flag,answer_flag)
-      % SetRotation Rate  Command angular speed for orientation changes
+      % SetRotationRate  Command angular speed for orientation changes
       %   This allows you to control the rotation rate that Sphero will use
       %   to meet new heading commands. A lower value offers better control
       %   but with a larger turning radius. A higher value will yield quick
@@ -2705,10 +2257,17 @@ classdef SpheroCore < handle & SpheroCoreConstants
         reset_timeout_flag,answer_flag);
       
     end
-    %{
-    % Get Chassis IDfunction GetChassisID(s,)end
-    % Self Level function SelfLevel(s,)end
-    %}
+    
+    function GetChassisID(s)
+      % GetChassisID
+      error('GetChassisID is not implemented.');
+    end
+    
+    function SelfLevel(s)
+      % SelfLevel
+      error('SelfLevel is not implemented.')
+    end
+    
     function fail = SetDataStreaming(...
         s,frame_rate,frame_count,packet_count,sensors_spec,...
         reset_timeout_flag)
@@ -2892,7 +2451,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
       assert(ischar(meth)&&any(strcmp(meth,{'off','one','two','three','four'})),...
         'Input ''meth'' must be a collision detection method string, ''off'', ''one'', ''two'', ''three'', or ''four''.');
-            
+      
       switch meth
         case 'off'
           meth = s.COL_DET_METHOD_OFF;
@@ -2976,14 +2535,19 @@ classdef SpheroCore < handle & SpheroCoreConstants
         reset_timeout_flag,answer_flag);
       
     end
-    %{
-function SetAccelerometerRange(s,fsr)
-      % Set Accelerometer Range
+    
+    function fail = SetAccelerometerRange(s,fsr,...
+        reset_timeout_flag)
+      % SetAccelerometerRange
       
       if nargin < 2
         return;
       elseif ~any(fsr == [2,4,8,16])
         return;
+      end
+      
+      if nargin<3 ||
+        reset_timeout_flag = [];
       end
       
       range_idx = 2;
@@ -3005,10 +2569,11 @@ function SetAccelerometerRange(s,fsr)
       cid = s.CMD_SET_ACCELERO;
       data = range_idx;
       
-      s.WriteClientCommandPacket(did,cid,data);
-  
-end
-    %}
+      fail = s.WriteClientCommandPacket(did,cid,data,...
+        reset_timeout_flag,true);
+      
+    end
+    
     function fail = ReadLocator(s,...
         reset_timeout_flag)
       % ReadLocator  Read Locator data into local properties.
@@ -3033,7 +2598,7 @@ end
       [fail,data] = s.WriteClientCommandPacket(did,cid,data,...
         reset_timeout_flag,true);
       
-      if isempty(data)
+      if fail || isempty(data)
         fail = true;
         return;
       end
@@ -3135,18 +2700,35 @@ end
         reset_timeout_flag,answer_flag);
       
     end
-    %{
-function GetRGBLED(s,)
-      % Get RGB LED
-       
-      did = s.DID_SPHERO;
-      cid = s.CMD_;
-      data = ;
+    
+    function fail = GetRGBLED(s,reset_timeout_flag)
+      % GetRGBLED  Get the "user LED color"
+      %   This retrieves the "user LED color" which is stored in the config
+      %   block (which may or may not be actively driven to the RGB LED).
       
-      s.WriteClientCommandPacket(did,cid,data);
-  
+      
+      error('GetRGBLED is not implemented.');
+      
+      if nargin < 2
+        reset_timeout_flag = [];
+      end
+      
+      did = s.DID_SPHERO;
+      cid = s.CMD_GET_RGB_LED;
+      data = [];
+      
+      [fail,data] = s.WriteClientCommandPacket(did,cid,data,...
+        reset_timeout_flag,true);
+      
+      if fail || isempty(data)
+        fail = true;
+        return;
+      end
+      
+      s.rgb_user = double(data)/255;
+      
     end
-    %}
+    
     function fail = Roll(s,speed,heading,state,...
         reset_timeout_flag,answer_flag)
       % Roll  Make Sphero roll at speed and heading.
@@ -3202,18 +2784,45 @@ function GetRGBLED(s,)
         reset_timeout_flag,answer_flag);
       
     end
-    %{
-function Boost(s,)
+    
+    function fail = Boost(s,state,...
+        reset_timeout_flag,answer_flag)
       % Boost
-       
-      did = s.DID_SPHERO;
-      cid = s.CMD_;
-      data = ;
+      %   Beginning with FW 1.46 (S2) and 3.25 (S3), this executes the
+      %   boost macro from within the SSB. It takes a 1 byte parameter
+      %   which is either 01h to begin boosting or 00h to stop.
       
-      s.WriteClientCommandPacket(did,cid,data);
-  
+      fail = true;
+      if nargin<2
+        return;
+      end
+      if nargin<2
+        reset_timeout_flag = [];
+      end
+      if nargin<3
+        answer_flag = [];
+      end
+      
+      if ~ischar(state) || ~any(strmp(state,{'on','off'}))
+        return;
+      end
+      
+      switch state
+        case 'on'
+          state = 1;
+        case 'off'
+          state = 0;
+      end
+      
+      did = s.DID_SPHERO;
+      cid = s.CMD_BOOST;
+      data = state;
+      
+      fail = s.WriteClientCommandPacket(did,cid,data,...
+        reset_timeout_flag,answer_flag);
+      
     end
-    %}
+    
     function fail = SetRawMotorValues(s,powervec,modecellstr,...
         reset_timeout_flag,answer_flag)
       % Set Raw Motor Values
@@ -3283,7 +2892,7 @@ function Boost(s,)
       % by caller
       assert(all(~isnan(md)),...
         'Invalid mode string. Valid entries are: ''off'', ''forward'', ''reverse'', ''brake'', ''ignore''.');
-            
+      
       % put power and mode into left and right scalar vars for readability
       pl = pwr(1);
       pr = pwr(2);
@@ -3343,7 +2952,7 @@ function Boost(s,)
       
     end
     %{
-function SetPermanentOptionFlags(s,)
+    function SetPermanentOptionFlags(s,)
       % Set Permanent Option Flags
        
       did = s.DID_SPHERO;
@@ -3354,7 +2963,7 @@ function SetPermanentOptionFlags(s,)
   
     end
     
-function GetPermanentOptionFlags(s,)
+    function GetPermanentOptionFlags(s,)
       % Get Permanent Option Flags
        
       did = s.DID_SPHERO;
@@ -3365,7 +2974,7 @@ function GetPermanentOptionFlags(s,)
   
     end
     
-function SetTemporaryOptionFlags(s,)
+    function SetTemporaryOptionFlags(s,)
       % Set Temporary Option Flags
        
       did = s.DID_SPHERO;
@@ -3376,7 +2985,7 @@ function SetTemporaryOptionFlags(s,)
   
     end
     
-function GetTemporaryOptionFlags(s,)
+    function GetTemporaryOptionFlags(s,)
       % Get Temporary Option Flags
        
       did = s.DID_SPHERO;
@@ -3387,7 +2996,7 @@ function GetTemporaryOptionFlags(s,)
   
     end
     
-function GetConfigurationBlock(s,)
+    function GetConfigurationBlock(s,)
       % Get Configuration Block
        
       did = s.DID_SPHERO;
@@ -3398,7 +3007,7 @@ function GetConfigurationBlock(s,)
   
     end
     
-function SetSSBModifierBlock(s,)
+    function SetSSBModifierBlock(s,)
       % Set SSB Modifier Block
        
       did = s.DID_SPHERO;
@@ -3409,7 +3018,7 @@ function SetSSBModifierBlock(s,)
   
     end
     
-function SetDeviceMode(s,)
+    function SetDeviceMode(s,)
       % Set Device Mode
        
       did = s.DID_SPHERO;
@@ -3420,7 +3029,7 @@ function SetDeviceMode(s,)
   
     end
     
-function SetConfigurationBlock(s,)
+    function SetConfigurationBlock(s,)
       % Set Configuration Block
        
       did = s.DID_SPHERO;
@@ -3431,7 +3040,7 @@ function SetConfigurationBlock(s,)
   
     end
     
-function GetDeviceMode(s,)
+    function GetDeviceMode(s,)
       % Get Device Mode
        
       did = s.DID_SPHERO;
@@ -3442,7 +3051,7 @@ function GetDeviceMode(s,)
   
     end
     
-function GetSSB(s,)
+    function GetSSB(s,)
       % Get SSB
        
       did = s.DID_SPHERO;
@@ -3453,7 +3062,7 @@ function GetSSB(s,)
   
     end
     
-function SetSSB(s,)
+    function SetSSB(s,)
       % Set SSB
        
       did = s.DID_SPHERO;
@@ -3464,7 +3073,7 @@ function SetSSB(s,)
   
     end
     
-function RefillBank(s,)
+    function RefillBank(s,)
       % Refill Bank
        
       did = s.DID_SPHERO;
@@ -3475,7 +3084,7 @@ function RefillBank(s,)
   
     end
     
-function BuyConsumable(s,)
+    function BuyConsumable(s,)
       % Buy Consumable
        
       did = s.DID_SPHERO;
@@ -3486,7 +3095,7 @@ function BuyConsumable(s,)
   
     end
     
-function UseConsumable(s,)
+    function UseConsumable(s,)
       % Use Consumable
        
       did = s.DID_SPHERO;
@@ -3497,7 +3106,7 @@ function UseConsumable(s,)
   
     end
     
-function GrantCores(s,)
+    function GrantCores(s,)
       % Grant Cores
        
       did = s.DID_SPHERO;
@@ -3508,7 +3117,7 @@ function GrantCores(s,)
   
     end
     
-function AddXP(s,)
+    function AddXP(s,)
       % Add XP
        
       did = s.DID_SPHERO;
@@ -3519,7 +3128,7 @@ function AddXP(s,)
   
     end
     
-function LevelUpAttribute(s,)
+    function LevelUpAttribute(s,)
       % Level Up Attribute
        
       did = s.DID_SPHERO;
@@ -3530,7 +3139,7 @@ function LevelUpAttribute(s,)
   
     end
     
-function GetPasswordSeed(s,)
+    function GetPasswordSeed(s,)
       % Get Password Seed
        
       did = s.DID_SPHERO;
@@ -3541,7 +3150,7 @@ function GetPasswordSeed(s,)
   
     end
     
-function EnableSSBAsyncMessages(s,)
+    function EnableSSBAsyncMessages(s,)
       % Enable SSB Async Messages
        
       did = s.DID_SPHERO;
@@ -3552,7 +3161,7 @@ function EnableSSBAsyncMessages(s,)
   
     end
     
-function RunMacro(s,)
+    function RunMacro(s,)
       % Run Macro
        
       did = s.DID_SPHERO;
@@ -3563,7 +3172,7 @@ function RunMacro(s,)
   
     end
     
-function SaveTemporaryMacro(s,)
+    function SaveTemporaryMacro(s,)
       % Save Temporary Macro
        
       did = s.DID_SPHERO;
@@ -3574,7 +3183,7 @@ function SaveTemporaryMacro(s,)
   
     end
     
-function SaveMacro(s,)
+    function SaveMacro(s,)
       % Save Macro
        
       did = s.DID_SPHERO;
@@ -3585,7 +3194,7 @@ function SaveMacro(s,)
   
     end
     
-function ReinitMacroExecutive(s,)
+    function ReinitMacroExecutive(s,)
       % Reinit Macro Executive
        
       did = s.DID_SPHERO;
@@ -3596,7 +3205,7 @@ function ReinitMacroExecutive(s,)
   
     end
     
-function AbortMacro(s,)
+    function AbortMacro(s,)
       % Abort Macro
        
       did = s.DID_SPHERO;
@@ -3607,7 +3216,7 @@ function AbortMacro(s,)
   
     end
     
-function GetMacroStatus(s,)
+    function GetMacroStatus(s,)
       % Get Macro Status
        
       did = s.DID_SPHERO;
@@ -3618,7 +3227,7 @@ function GetMacroStatus(s,)
   
     end
     
-function SetMacroParameter(s,)
+    function SetMacroParameter(s,)
       % Set Macro Parameter
        
       did = s.DID_SPHERO;
@@ -3629,7 +3238,7 @@ function SetMacroParameter(s,)
   
     end
     
-function AppendMacroChunk(s,)
+    function AppendMacroChunk(s,)
       % Append Macro Chunk
        
       did = s.DID_SPHERO;
@@ -3640,7 +3249,7 @@ function AppendMacroChunk(s,)
   
     end
     
-function EraseorbBasicStorage(s,)
+    function EraseorbBasicStorage(s,)
       % Erase orbBasic Storage
        
       did = s.DID_SPHERO;
@@ -3651,7 +3260,7 @@ function EraseorbBasicStorage(s,)
   
     end
     
-function AppendorbBasicFragment(s,)
+    function AppendorbBasicFragment(s,)
       % Append orbBasic Fragment
        
       did = s.DID_SPHERO;
@@ -3662,7 +3271,7 @@ function AppendorbBasicFragment(s,)
   
     end
     
-function ExecuteorbBasicProgram(s,)
+    function ExecuteorbBasicProgram(s,)
       % Execute orbBasic Program
        
       did = s.DID_SPHERO;
@@ -3673,7 +3282,7 @@ function ExecuteorbBasicProgram(s,)
   
     end
     
-function AbortorbBasicProgram(s,)
+    function AbortorbBasicProgram(s,)
       % Abort orbBasic Program
        
       did = s.DID_SPHERO;
@@ -3684,7 +3293,7 @@ function AbortorbBasicProgram(s,)
   
     end
     
-function SubmitValuetoInputStatement(s,)
+    function SubmitValuetoInputStatement(s,)
       % Submit Value to Input Statement
        
       did = s.DID_SPHERO;
@@ -3695,7 +3304,7 @@ function SubmitValuetoInputStatement(s,)
   
     end
     
-function CommitRAMProgramtoFlash(s,)
+    function CommitRAMProgramtoFlash(s,)
       % Commit RAM Program to Flash
        
       did = s.DID_SPHERO;
@@ -3706,12 +3315,25 @@ function CommitRAMProgramtoFlash(s,)
   
     end
     %}
-    % END === Sphero ======================================================
-    
-    % END API Functions ===================================================
   end
   
   methods (Static=true,Access=private)
+    
+    function out = AssertUserCallbackFcn(func,str)
+      assert( (isa(func,'function_handle')&&(2==nargin(func))) || isempty(func),...
+        'Property ''%s'' must be a function handle or the empty matrix.',str);
+      out = func;
+    end
+    
+    function InvokeUserCallbackFcn(func,src,evt,str)
+      % InvokeUserCallbackFcn  invokes callback
+      if isempty(func), return; end % fall through if no callback
+      try
+        func(src,evt);
+      catch err
+        warning('Error in ''%s'':\n\t%s',str,err.message);
+      end
+    end
     
     function print_level2diagnostics(data)
       

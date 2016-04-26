@@ -162,6 +162,7 @@ quat = src.quat;
 quat = quat .* [1;-1;-1;-1]; % conjugate to get body w.r.t. global
 
 R = quat2rot(quat,'sv');
+
 H = [R,[0;0;0];0,0,0,1]; % hom. transform
 set(handles.hp.robot,'matrix',H);
 
@@ -235,7 +236,7 @@ function figure1_DeleteFcn(hObject, eventdata, handles)
 if ~isempty(handles.s)
   
   % turn off data streaming
-  handles.s.OnNewDataStreamingFcn = @()[];
+  handles.s.OnNewDataStreamingFcn = [];
   if handles.s.SetDataStreaming(1,1,0,{''});
     % failure
   end
@@ -272,7 +273,7 @@ switch get(hObject,'string')
     case 'Disable Data Streaming'
     set(hObject,'string','Enable Data Streaming');
     % clear callback to prevent more updates
-    handles.s.OnNewDataStreamingFcn = @()[];
+    handles.s.OnNewDataStreamingFcn = [];
 
     % this button sets off data streaming
     if ~isempty(handles.s)

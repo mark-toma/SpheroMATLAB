@@ -30,10 +30,13 @@ function R = q2r(q,type)
 if strcmp(type,'sv')
   s = q(1);
   v = q(2:4);
+  
 else
   v = q(1:3);
   s = q(4);
 end
+vt = [0,-v(3),v(2);v(3),0,-v(1);-v(2),v(1),0];
 
-R = eye(3) + 2*v*v' - 2*v'*v*eye(3) + 2*s*skew(v);
+R = eye(3) + 2*(v*v') - 2*(v'*v)*eye(3) + 2*s*vt;
+
 end

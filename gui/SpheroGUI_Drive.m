@@ -349,7 +349,7 @@ stop(handles.tmr);
 delete(handles.tmr);
 
 if ~isempty(handles.s)
-  handles.s.OnNewDataStreamingFcn = @()[]; % remove callback
+  handles.s.OnNewDataStreamingFcn = []; % remove callback
   handles.s.SetDataStreaming(5,1,1,{'odo','vel'});
 end
 
