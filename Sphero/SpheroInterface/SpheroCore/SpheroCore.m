@@ -577,7 +577,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
     
   end
   
-  methods (Access = private)
+  methods (Access = protected)
     
     %% === Utility ========================================================
     function WARN_PRINT(s,varargin)
@@ -816,9 +816,10 @@ classdef SpheroCore < handle & SpheroCoreConstants
         s.response_packet.sop1 = sop1;
         s.response_packet.sop2 = sop2;
         s.response_packet.mrsp = mrsp;
+        s.response_packet.seq  = seq;
+        s.response_packet.dlen = dlen;
         s.response_packet.data = data;
-        s.response_packet.chk = chk;
-        s.response_packet.seq = seq;
+        s.response_packet.chk  = chk;
         
       elseif sop2 == s.SOP2_ASYNC
         % async message format
@@ -1096,6 +1097,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
     % trigger the OnNewMSG listeners wherein user-specified callbacks
     % stored in the NewMSGFcn properties are called is they have been set.
     function HandlePowerNotification(s,data)
+      
       notify(s,'NewPowerNotification');
     end
     
@@ -1130,7 +1132,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       sensors = s.data_streaming_info.sensors;
       BYTES_PER_VALUE = 2;
       s.DEBUG_PRINT('streaming data length: %d',length(data));
-      if iempty(sensors)
+      if isempty(sensors)
         % no sensors... wtf?
         return;
       elseif length(sensors) ~= length(data)/BYTES_PER_VALUE
@@ -1289,50 +1291,50 @@ classdef SpheroCore < handle & SpheroCoreConstants
     end
     
     %% === Event Callback Dispatchers =====================================
-    function OnNewPowerNotification(s)
+    function OnNewPowerNotification(s,src,evt)
       s.InvokeUserCallbackFcn(s.NewPowerNotificationFcn,s,[],'NewPowerNotificationFcn');
     end
-    function OnNewLevel1Diagnostic(s)
+    function OnNewLevel1Diagnostic(s,src,evt)
       s.InvokeUserCallbackFcn(s.NewLevel1DiagnosticFcn,s,[],'NewLevel1DiagnosticFcn');
     end
-    function OnNewDataStreaming(s)
-      s.InvokeUserCallbackFcn(s.OnNewDataStreamingFcn,s,[],'NewDataStreamingFcn');
+    function OnNewDataStreaming(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewDataStreamingFcn,s,[],'NewDataStreamingFcn');
     end
-    function OnNewConfigBlockContents(s)
-      s.InvokeUserCallbackFcn(s.OnNewConfigBlockContentsFcn,s,[],'NewConfigBlockContentsFcn');
+    function OnNewConfigBlockContents(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewConfigBlockContentsFcn,s,[],'NewConfigBlockContentsFcn');
     end
-    function OnNewPreSleepWarning(s)
-      s.InvokeUserCallbackFcn(s.OnNewPreSleepWarningFcn,s,[],'NewPreSleepWarningFcn');
+    function OnNewPreSleepWarning(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewPreSleepWarningFcn,s,[],'NewPreSleepWarningFcn');
     end
-    function OnNewMacroMarkers(s)
-      s.InvokeUserCallbackFcn(s.OnNewMacroMarkersFcn,s,[],'NewMacroMarkersFcn');
+    function OnNewMacroMarkers(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewMacroMarkersFcn,s,[],'NewMacroMarkersFcn');
     end
-    function OnNewCollisionDetected(s)
-      s.InvokeUserCallbackFcn(s.OnNewCollisionDetectedFcn,s,[],'NewCollisionDetectedFcn');
+    function OnNewCollisionDetected(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewCollisionDetectedFcn,s,[],'NewCollisionDetectedFcn');
     end
-    function OnNewOrbBasicMessage(s)
-      s.InvokeUserCallbackFcn(s.OnNewOrbBasicMessageFcn,s,[],'NewOrbBasicMessageFcn');
+    function OnNewOrbBasicMessage(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewOrbBasicMessageFcn,s,[],'NewOrbBasicMessageFcn');
     end
-    function OnNewSelfLevelResult(s)
-      s.InvokeUserCallbackFcn(s.OnNewSelfLevelResultFcn,s,[],'NewSelfLevelResultFcn');
+    function OnNewSelfLevelResult(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewSelfLevelResultFcn,s,[],'NewSelfLevelResultFcn');
     end
-    function OnNewGyroAxisLimitExceeded(s)
-      s.InvokeUserCallbackFcn(s.OnNewGyroAxisLimitExceededFcn,s,[],'NewGyroAxisLimitExceededFcn');
+    function OnNewGyroAxisLimitExceeded(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewGyroAxisLimitExceededFcn,s,[],'NewGyroAxisLimitExceededFcn');
     end
-    function OnNewSpheroSoulData(s)
-      s.InvokeUserCallbackFcn(s.OnNewSpheroSoulDataFcn,s,[],'NewSpheroSoulDataFcn');
+    function OnNewSpheroSoulData(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewSpheroSoulDataFcn,s,[],'NewSpheroSoulDataFcn');
     end
-    function OnNewLevelUp(s)
-      s.InvokeUserCallbackFcn(s.OnNewLevelUpFcn,s,[],'NewLevelUpFcn');
+    function OnNewLevelUp(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewLevelUpFcn,s,[],'NewLevelUpFcn');
     end
-    function OnNewShieldDamage(s)
-      s.InvokeUserCallbackFcn(s.OnNewShieldDamageFcn,s,[],'NewShieldDamageFcn');
+    function OnNewShieldDamage(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewShieldDamageFcn,s,[],'NewShieldDamageFcn');
     end
-    function OnNewXpUpdate(s)
-      s.InvokeUserCallbackFcn(s.OnNewXpUpdateFcn,s,[],'NewXpUpdateFcn');
+    function OnNewXpUpdate(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewXpUpdateFcn,s,[],'NewXpUpdateFcn');
     end
-    function OnNewBoostUpdate(s)
-      s.InvokeUserCallbackFcn(s.OnNewBoostUpdateFcn,s,[],'NewBoostUpdateFcn');
+    function OnNewBoostUpdate(s,src,evt)
+      s.InvokeUserCallbackFcn(s.NewBoostUpdateFcn,s,[],'NewBoostUpdateFcn');
     end
     
   end
@@ -1370,6 +1372,9 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   in order to operate. The data record structure is comprised of
       %   fields for each resource that encodes the version number
       %   according to the specified format.
+      %
+      % Errata:
+      %   The length of this data payload appears to be 8 bytes
       %
       % Properties:
       %   version_info
@@ -1413,7 +1418,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
         reset_timeout_flag,true);
       
       version_info = [];
-      if fail || isempty(data) || (10 ~= length(data))
+      if fail || isempty(data) || (8 ~= length(data))
         fail = true;
         return;
       end
@@ -1557,10 +1562,13 @@ classdef SpheroCore < handle & SpheroCoreConstants
         return;
       end
       
-      s.bluetooth_info.name = char(data(1:16));
-      s.bluetooth_info.address = char(data(17:28));
+      
+      name = char(data(1:16));
+      s.bluetooth_info.name = name(1:find(name,1,'last'));
+      addr = char(data(17:28));
+      s.bluetooth_info.address = [sprintf('%c%c:',addr(1:10)),addr(11:12)];
       % 29 should be zero
-      s.bluetooth_info.rgb = double(data(30:32))';
+      s.bluetooth_info.rgb = char(data(30:32));
       
       bluetooth_info = s.bluetooth_info;
       
@@ -2546,7 +2554,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
         return;
       end
       
-      if nargin<3 ||
+      if nargin<3
         reset_timeout_flag = [];
       end
       
@@ -3317,7 +3325,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
     %}
   end
   
-  methods (Static=true,Access=private)
+  methods (Static=true,Access=protected)
     
     function out = AssertUserCallbackFcn(func,str)
       assert( (isa(func,'function_handle')&&(2==nargin(func))) || isempty(func),...
