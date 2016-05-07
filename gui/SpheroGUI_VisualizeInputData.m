@@ -209,7 +209,7 @@ set(handles.hp.accel(4),'xdata',time,'ydata',sqrt(sum(a.^2)));
 set(handles.ax_gyro,'xlim',xlims);
 set(handles.ax_accel,'xlim',xlims);
 
-if ~src.data_streaming_info.is_streaming
+if ~src.data_streaming_info.is_enabled
   set(handles.pb_start_streaming,'enable','on');
 end
 
@@ -236,7 +236,7 @@ function figure1_DeleteFcn(hObject, eventdata, handles)
 if ~isempty(handles.s)
   
   % turn off data streaming
-  handles.s.OnNewDataStreamingFcn = [];
+  handles.s.NewDataStreamingFcn = [];
   if handles.s.SetDataStreaming(1,1,0,{''});
     % failure
   end
@@ -261,7 +261,7 @@ switch get(hObject,'string')
     % this button sets off data streaming
     if ~isempty(handles.s) 
       % set callback
-      handles.s.OnNewDataStreamingFcn = @(src,evt)DataStreamingCallback(src,evt,handles);
+      handles.s.NewDataStreamingFcn = @(src,evt)DataStreamingCallback(src,evt,handles);
       handles.s.ClearLogs;
       handles.s.SetDataStreaming(...
         handles.const.frame_rate,...
@@ -273,7 +273,7 @@ switch get(hObject,'string')
     case 'Disable Data Streaming'
     set(hObject,'string','Enable Data Streaming');
     % clear callback to prevent more updates
-    handles.s.OnNewDataStreamingFcn = [];
+    handles.s.NewDataStreamingFcn = [];
 
     % this button sets off data streaming
     if ~isempty(handles.s)

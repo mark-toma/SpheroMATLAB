@@ -102,6 +102,7 @@ function sl_heading_offset_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 val = get(hObject,'value');
+val = round(val/5)*5; % round to 5 deg increments
 set(handles.st_heading_offset,'string',...
   sprintf('heading_offset = [ % 3d ]',val));
 if ~isempty(handles.s)

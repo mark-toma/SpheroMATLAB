@@ -52,6 +52,8 @@ function SpheroGUI_Drive_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to SpheroGUI_Drive (see VARARGIN)
 
+set(hObject,'hittest','off');
+
 s = [];
 sphero_rgb = [0,1,0];
 if nargin > 3
@@ -149,7 +151,7 @@ handles.tmr = timer(...
 UpdateInputSetpoint(handles);
 
 if ~isempty(handles.s)
-  handles.s.OnNewDataStreamingFcn = @(src,evt)DataStreamingCallback(src,evt,handles);
+  handles.s.NewDataStreamingFcn = @(src,evt)DataStreamingCallback(src,evt,handles);
   handles.s.ConfigureLocatorWithOffset(0,0);
 end
 
@@ -158,6 +160,8 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
+
+set(hObject,'hittest','on');
 
 % UIWAIT makes SpheroGUI_Drive wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -182,6 +186,7 @@ handles.s.RollWithOffset(speed,heading,'normal',[],false);
 
 % --- updates control setpoint and graphical display of drive input
 function UpdateInputSetpoint(handles)
+if ~isfield(handles,'env'), return; end
 switch handles.env.state
   case 'drive'
     cp = get(handles.ax_drive,'currentpoint');
@@ -345,11 +350,12 @@ function figure1_DeleteFcn(hObject, eventdata, handles)
 % hObject    handle to figure1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-stop(handles.tmr);
-delete(handles.tmr);
-
-if ~isempty(handles.s)
-  handles.s.OnNewDataStreamingFcn = []; % remove callback
+if isfield(handles,'tmr') && ~isempty(handles.tmr)
+  stop(handles.tmr);
+  delete(handles.tmr);
+end
+if isfield(handles,'s') && ~isempty(handles.s)
+  handles.s.NewDataStreamingFcn = []; % remove callback
   handles.s.SetDataStreaming(5,1,1,{'odo','vel'});
 end
 
