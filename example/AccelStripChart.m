@@ -38,7 +38,7 @@ packet_count = 0; % unlimited streaming
 sensors = {'accel_raw','accel_filt','accel_one'};
 
 % plop the callback into spherocore
-s.OnNewDataStreamingFcn = @(src,evt)myAccelCallback(src,evt,hp,window);
+s.NewDataStreamingFcn = @(src,evt)myAccelCallback(src,evt,hp,window);
 
 % clear any old log data
 s.ClearLogs();
@@ -56,7 +56,7 @@ s.SetDataStreaming(1,1,0,{''});
 %% Clean up the figure
 
 % clear out the callback
-s.OnNewDataStreamingFcn = [];
+s.NewDataStreamingFcn = [];
 
 % delete the figure
 delete(hf);

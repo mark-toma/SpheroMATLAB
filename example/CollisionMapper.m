@@ -18,8 +18,8 @@ switch action
     hgfx.robot = plot(0,0,'ok','linewidth',2);
     hgfx.obs = plot(0,0,'xm','linewidth',4,'visible','off');    
     
-    s.OnNewCollisionDetectedFcn = @(src,evt)collisionCallback(src,evt,hgfx);
-    s.OnNewDataStreamingFcn = @(src,evt)dataStreamingCallback(src,evt,hgfx);  
+    s.NewCollisionDetectedFcn = @(src,evt)collisionCallback(src,evt,hgfx);
+    s.NewDataStreamingFcn = @(src,evt)dataStreamingCallback(src,evt,hgfx);  
     
     
     if s.SetDataStreaming(10,1,0,{'odo'})

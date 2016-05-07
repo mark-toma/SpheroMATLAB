@@ -10,7 +10,7 @@ thresh = 0.5*[1,1];
 spd = 0.3*[1,1];
 dead = 0.5;
 
-s.OnNewCollisionDetectedFcn = @(src,evt)myCollisionDetectionCallback(src,evt);
+s.NewCollisionDetectedFcn = @(src,evt)myCollisionDetectionCallback(src,evt);
 
 s.ConfigureCollisionDetection(meth,thresh,spd,dead)
 

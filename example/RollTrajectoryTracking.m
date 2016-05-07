@@ -41,7 +41,7 @@ packet_count = 0; % unlimited streaming
 sensors = {'odo'};
 
 % plop the callback into spherocore
-s.OnNewDataStreamingFcn = @(src,evt)rollTrajTrackCallback(src,evt,param);
+s.NewDataStreamingFcn = @(src,evt)rollTrajTrackCallback(src,evt,param);
 
 s.SetStabilization(true); % set stabilization on for Roll
 

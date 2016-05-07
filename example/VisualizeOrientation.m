@@ -37,7 +37,7 @@ packet_count = 0; % unlimited streaming
 sensors = {'quat'};
 
 % plop the callback into spherocore
-s.OnNewDataStreamingFcn = @(src,evt)myQuatCallback(src,evt,hx);
+s.NewDataStreamingFcn = @(src,evt)myQuatCallback(src,evt,hx);
 
 s.SetStabilization(false);
 
