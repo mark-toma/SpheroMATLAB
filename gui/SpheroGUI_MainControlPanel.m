@@ -76,6 +76,20 @@ function varargout = SpheroGUI_MainControlPanel_OutputFcn(hObject, eventdata, ha
 varargout{1} = handles.output;
 
 
+function PowerNotificationCallback(src,evt,handles)
+
+handles.s.GetPowerState();
+pwr_info = handles.s.power_state_info;
+
+set(handles.st_power,'string',pwr_info.power);
+set(handles.st_batt_voltage,'string',...
+  sprintf('%5.2f[V]',pwr_info.batt_voltage));
+set(handles.st_num_charges,'string',...
+  sprintf('%d[N]',pwr_info.num_charges));
+set(handles.st_time_since_charge,'string',...
+  sprintf('%d[s]',pwr_info.time_since_charge));
+
+
 % --- Executes on button press in pb_find_devices.
 function pb_find_devices_Callback(hObject, eventdata, handles)
 % hObject    handle to pb_find_devices (see GCBO)
@@ -148,6 +162,27 @@ else
   set(handles.lb_device_list,'string','Connected!');
   set(handles.pb_disconnect_device,'enable','on');
   set(get(handles.pnl_apps,'children'),'enable','on');
+  
+  % set versioning info
+  ver_info=handles.s.version_info;
+  set(handles.st_ver_msa,'string',...
+    sprintf('%d.%d',ver_info.MSA_ver,ver_info.MSA_rev));
+  set(handles.st_ver_hw,'string',sprintf('%d',ver_info.HW));
+  set(handles.st_ver_bl,'string',sprintf('%3.1f',ver_info.BL));
+  
+  % get/set bluetooth info
+  handles.s.GetBluetoothInfo();
+  bt_info = handles.s.bluetooth_info;
+  set(handles.st_bt_name,'string',bt_info.name);
+  set(handles.st_bt_address,'string',bt_info.address);
+  set(handles.st_bt_id_colors,'string',bt_info.rgb);
+  
+  % get/set power state info
+  handles.s.NewPowerNotificationFcn = @(src,evt)PowerNotificationCallback(src,evt,handles);
+  handles.s.SetPowerNotification(true);
+  PowerNotificationCallback(handles.s,[],handles);
+  
+  
 end
 
 
