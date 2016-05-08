@@ -263,33 +263,24 @@ classdef (HandleCompatible) SpheroCoreConstants
     COL_DET_METHOD_2 = 2;
     COL_DET_METHOD_3 = 3;
     COL_DET_METHOD_4 = 4;
-    
     COL_DET_NUM_BYTES = 16;
-    
-    
     COL_DET_THRESH_DEFAULT = 0.1;
     COL_DET_SPD_DEFAULT = 0.1;
     COL_DET_DEAD_DEFAULT = 0.1; % [s] 0-255 ms
     
+    PWR_CHARGING = 1;
+    PWR_OK       = 2;
+    PWR_LOW      = 3;
+    PWR_CRITICAL = 4;
     
+    ACCEL_RANGE_2G  = 0;
+    ACCEL_RANGE_4G  = 1;
+    ACCEL_RANGE_8G  = 2;
+    ACCEL_RANGE_16G = 3;
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    ROLL_STATE_STOP   = 0;
+    ROLL_STATE_NORMAL = 1;
+    ROLL_STATE_FAST   = 2;
   end
   
 end

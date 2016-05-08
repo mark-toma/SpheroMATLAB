@@ -1342,8 +1342,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
   methods (Access = public)
     
     %% === API Core Device ================================================
-    function fail = Ping(s,...
-        reset_timeout_flag)
+    function fail = Ping(s,varargin)
       % Ping  Pings the device - returns true is successful
       %   Use this method as a communications test.
       %
@@ -1351,20 +1350,14 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %     fail = s.Ping()
       %       Returns false if Ping was successful.
       % DONE
-      if nargin < 2
-        reset_timeout_flag = [];
-      end
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
       
-      did = s.DID_CORE;
-      cid = s.CMD_PING;
-      data = [];
-      % override answer_flag so this always provides a response
+      did = s.DID_CORE; cid = s.CMD_PING; data = [];
       fail = s.WriteClientCommandPacket(did,cid,data,...
         reset_timeout_flag,true);
     end
     
-    function [fail,version_info] = GetVersioning(s,...
-        reset_timeout_flag)
+    function [fail,version_info] = GetVersioning(s,varargin)
       % GetVersioning  Get version information from Sphero firmware.
       %   The Get Versioning command returns a whole slew of software and
       %   hardware information. It’s useful if your Client Application
@@ -1405,55 +1398,21 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %
       % Examples:
       %   TODO
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
       
-      if nargin < 2
-        reset_timeout_flag = [];
-      end
-      
-      did = s.DID_CORE;
-      cid = s.CMD_VERSION;
-      data = [];
-      % override answer_flag so this always provides a response
+      did = s.DID_CORE; cid = s.CMD_VERSION; data = [];
       [fail,data] = s.WriteClientCommandPacket(did,cid,data,...
         reset_timeout_flag,true);
       
       version_info = [];
       if fail || isempty(data) || (8 ~= length(data))
-        fail = true;
-        return;
+        fail = true; return;
       end
-      
-      % process response data
-      recv = data(1);
-      mdl = data(2);
-      hw =  data(3);
-      msa_ver = data(4);
-      msa_rev = data(5);
-      bl = bitand(bitshift(data(6),-4),15,'uint8') + ...
-        + 0.1 * bitand(data(6),15,'uint8');
-      bas = ...
-        bitand(bitshift(data(7),-4),15,'uint8') + ...
-        + 0.1 * bitand(data(7),15,'uint8');
-      macro = ...
-        bitand(bitshift(data(8),-4),15,'uint8') + ...
-        + 0.1 * bitand(data(8),15,'uint8');
-      
-      s.version_info.RECV     = recv;
-      s.version_info.MDL      = mdl;
-      s.version_info.HW       = hw;
-      s.version_info.MSA_ver  = msa_ver;
-      s.version_info.MSA_rev  = msa_rev;
-      s.version_info.BL       = bl;
-      s.version_info.BAS      = bas;
-      s.version_info.MACRO    = macro;
-      
+      s.version_info = s.VersionInfoFromData(data);     
       version_info = s.version_info;
-      
-    end
+    end    
     
-    
-    function fail = ControlUARTTxLine(s,flag,...
-        reset_timeout_flag)
+    function fail = ControlUARTTxLine(s,flag,varargin)
       % ControlUARTTxLine  TODO
       %   This is a factory command that either enables or disables the
       %   CPU's UART transmit line so that another physically connected
@@ -1462,17 +1421,15 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   later. Or just reboot as this setting is not persistent.
       %
       % TODO
-      assert( (nargin>=2),...
+      assert( nargin>1,...
         'Input ''flag'' is required.');
-      if nargin < 3
-        reset_timeout_flag = [];
-      end
       assert( islogical(flag) && isscalar(flag),...
         'Input ''flag'' must be a logical scalar.');
-      
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
+
       flag = uint8(flag);
       
-      did = s.DID_CORE;
+      did = s.DID_CORE; 
       cid = s.CMD_CONTROL_UART_TX;
       data = flag;
       
@@ -1481,8 +1438,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
     end
     
-    function fail = SetDeviceName(s,name,...
-        reset_timeout_flag,answer_flag)
+    function fail = SetDeviceName(s,name,varargin)
       % SetDeviceName  Change Sphero name.
       %   This formerly reprogrammed the Bluetooth module to advertise with
       %   a different name, but this is no longer the case. This assigned
@@ -1501,18 +1457,13 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %
       % TODO
       
-      assert( nargin>=2,...
+      assert( nargin>1,...
         'Input ''name'' is required.');
-      if nargin < 3
-        reset_timeout_flag = [];
-      end
-      if nargin < 4
-        answer_flag = [];
-      end
-      
       assert(ischar(name)&&isvector(name)&&(length(name)>=1)&&(length(name)<=48),...
         'Input ''name'' must be a string of length in [1,48] characters.');
-      
+
+      [reset_timeout_flag,answer_flag] = s.ParseVargs(varargin{:});
+
       name_bytes = uint8(name);
       
       did = s.DID_CORE;
@@ -1523,8 +1474,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
         reset_timeout_flag,answer_flag);
     end
     
-    function [fail,bluetooth_info] = GetBluetoothInfo(s,...
-        reset_timeout_flag)
+    function [fail,bluetooth_info] = GetBluetoothInfo(s,varargin)
       % GetBluetoothInfo  Get Sphero's name and ID colors.
       %   This returns a structure containing the textual name in ASCII of
       %   the ball (defaults to the Bluetooth advertising name but can be
@@ -1543,11 +1493,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       % Outputs:
       %   bluetooth_info
       %     TODO
-      
-      
-      if nargin < 2
-        reset_timeout_flag = [];
-      end
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
       
       did = s.DID_CORE;
       cid = s.CMD_GET_BT_NAME;
@@ -1562,20 +1508,12 @@ classdef SpheroCore < handle & SpheroCoreConstants
         return;
       end
       
-      
-      name = char(data(1:16));
-      s.bluetooth_info.name = name(1:find(name,1,'last'));
-      addr = char(data(17:28));
-      s.bluetooth_info.address = [sprintf('%c%c:',addr(1:10)),addr(11:12)];
-      % 29 should be zero
-      s.bluetooth_info.rgb = char(data(30:32));
-      
+      s.bluetooth_info = s.BluetoothInfoFromData(data);
       bluetooth_info = s.bluetooth_info;
       
     end
     
-    function fail = SetAutoReconnect(s,flag,time,...
-        reset_timeout_flag)
+    function fail = SetAutoReconnect(s,flag,time,varargin)
       % Set Auto Reconnect  Configure autoreconnect feature.
       %   This configures the control of the Bluetooth module in its
       %   attempt to automatically reconnect with the last mobile Apple
@@ -1586,22 +1524,19 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   enable auto reconnect mode. For example, if time = 30 then the
       %   module will be attempt reconnecting 30 seconds after waking up.
       %   (refer to RN-APL-EVAL pg. 7 for more info)
-      assert( (nargin>=2),...
+      assert( nargin>1,...
         'Input ''flag'' is required.');
       if nargin < 3
         assert(flag,...
           'Input ''time'' is required when ''flag'' is set.');
         time = 0; % flag is not set, time is arbitrarily zero
       end
-      if nargin < 4
-        reset_timeout_flag = [];
-      end
-      
       assert( islogical(flag) && isscalar(flag),...
         'Input ''flag'' must be a logical scalar.');
       assert(isnumeric(time)&&isscalar(time)&&(time>=0)&&(time<=intmax('uint8')),...
         'Input ''time'' must be a numeric scalar in [0,255] seconds.');
-      
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
+
       did = s.DID_CORE;
       cid = s.CMD_SET_AUTO_RECONNECT;
       data = [flag,time];
@@ -1611,8 +1546,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
     end
     
-    function [fail,autoreconnect_info] = GetAutoReconnect(s,...
-        reset_timeout_flag)
+    function [fail,autoreconnect_info] = GetAutoReconnect(s,varargin)
       % GetAutoReconnect  Get configuration of autoreconnect feature.
       %
       % Properties:
@@ -1631,10 +1565,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %     attempts in seconds.
       %
       % DONE
-      
-      if nargin < 2
-        reset_timeout_flag = [];
-      end
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
       
       did = s.DID_CORE;
       cid = s.CMD_GET_AUTO_RECONNECT;
@@ -1644,20 +1575,17 @@ classdef SpheroCore < handle & SpheroCoreConstants
         reset_timeout_flag,true);
       
       autoreconnect_info = [];
-      if fail || isempty(data) || (xx~=length(data))
+      if fail || isempty(data) || (2~=length(data))
         fail = true;
         return;
       end
       
-      s.autoreconnect_info.flag = data(1)==1;
-      s.autoreconnect_info.time = double(data(2));
-      
+      s.autoreconnect_info = s.AutoReconnectInfoFromData(data);
       autoreconnect_info = s.autoreconnect_info;
       
     end
     
-    function [fail,power_state_info] = GetPowerState(s,...
-        reset_timeout_flag)
+    function [fail,power_state_info] = GetPowerState(s,varargin)
       % GetPowerState  TODO
       %   This returns the current power state and some additional
       %   parameters to the Client. They are detailed below.
@@ -1679,10 +1607,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %     TODO
       %   power_state_info.time_since_charge
       %     TODO
-      
-      if nargin < 2
-        reset_timeout_flag = [];
-      end
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
       
       did = s.DID_CORE;
       cid = s.CMD_GET_PWR_STATE;
@@ -1697,56 +1622,23 @@ classdef SpheroCore < handle & SpheroCoreConstants
         return;
       end
       
-      s.power_state_info.rec_ver = double(data(1));
-      power_enum = double(data(2));
-      switch power_enum
-        case 1
-          s.power_state_info.power = 'charging';
-        case 2
-          s.power_state_info.power = 'ok';
-        case 3
-          s.power_state_info.power = 'low';
-        case 4
-          s.power_state_info.power = 'critical';
-        otherwise
-          warning('Unknown power state.');
-          s.power_state_info.power = 'unknown';
-      end
-      
-      s.power_state_info.batt_voltage = ...
-        0.01 * double(s.IntegerFromByteArray(data(3:4),'uint16'));
-      s.power_state_info.num_charges = ...
-        double(s.IntegerFromByteArray(data(5:6),'uint16'));
-      s.power_state_info.time_since_charge = ...
-        double(s.IntegerFromByteArray(data(7:8),'uint16'));
-      
+      s.power_state_info = s.PowerStateInfoFromData(data);
       power_state_info = s.power_state_info;
       
     end
     
-    function fail = SetPowerNotification(s,flag,...
-        reset_timeout_flag,answer_flag)
+    function fail = SetPowerNotification(s,flag,varargin)
       % SetPowerNotification  Turn asynchronous power notifications on/off.
       %   The message handler for these messages isn't developed yet.
       %
       % TODO implement built-in handling for this async response message
       
-      if nargin < 2
-        % input required
-        return;
-      end
-      if nargin < 3
-        reset_timeout_flag = [];
-      end
-      if nargin < 4
-        answer_flag = [];
-      end
+      assert( nargin>1,'Input ''flag'' is required.');
+      assert( islogical(flag) && isscalar(flag),...
+        'Input ''flag'' must be a logical scalar.');
+      [reset_timeout_flag,answer_flag] = s.ParseVargs(varargin{:});
       
-      if flag
-        flag = 1;
-      else
-        flag = 0;
-      end
+      if flag, flag = 1; else flag = 0; end
       
       did = s.DID_CORE;
       cid = s.CMD_SET_PWR_NOTIFY;
@@ -1756,10 +1648,8 @@ classdef SpheroCore < handle & SpheroCoreConstants
         reset_timeout_flag,answer_flag);
       
     end
-    
-    
-    function fail = Sleep(s,wakeup,macro,orb_basic,...
-        reset_timeout_flag)
+        
+    function fail = Sleep(s,wakeup,macro,orb_basic,varargin)
       % Sleep  Put Sphero to sleep immediately
       %   This command puts Sphero to sleep immediately. There are three
       %   optional parameters that program the robot for future actions
@@ -1787,9 +1677,8 @@ classdef SpheroCore < handle & SpheroCoreConstants
       if nargin < 4 || isempty(orb_basic)
         orb_basic = 0;
       end
-      if nargin < 5
-        reset_timeout_flag = [];
-      end
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
+
       
       % check valid input
       assert(isnumeric(wakeup)&&isscalar(wakeup)&&(wakeup>=0)&&(wakeup<=intmax('uint16')),...
@@ -1810,8 +1699,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
     end
     
-    function [fail,voltage_trip_points] = GetVoltageTripPoints(s,...
-        reset_timeout_flag)
+    function [fail,voltage_trip_points] = GetVoltageTripPoints(s,varargin)
       % GetVoltageTripPoints  TODO
       %   This returns the voltage trip points for what Sphero considers
       %   Low battery and Critical battery. The values are expressed in
@@ -1829,10 +1717,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   Usage:
       %     [~,vlow,vcrit] = s.GetVoltageTripPoints()
       %       TODO
-      
-      if nargin < 3
-        reset_timeout_flag = [];
-      end
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
       
       did = s.DID_CORE;
       cid = s.GET_POWER_TRIPS;
@@ -1847,15 +1732,13 @@ classdef SpheroCore < handle & SpheroCoreConstants
         return;
       end
       
-      voltage_trip_points.vlow = ...
-        0.01 * double(s.IntegerFromByteArray(data(1:2),'uint16'));
-      voltage_trip_points.vcrit = ...
-        0.01 * double(s.IntegerFromByteArray(data(3:4),'uint16'));
+      [vlow,vcrit] = s.VoltageTripPointsFromData(data);
+      voltage_trip_points.vlow = vlow;
+      voltage_trip_points.vcrit = vcrit;
       
     end
     
-    function fail = SetVoltageTripPoints(s,vlow,vcrit,...
-        reset_timeout_flag)
+    function fail = SetVoltageTripPoints(s,vlow,vcrit,varargin)
       % SetVoltageTripPoints  TODO
       %   This assigns the voltage trip points for low and critical battery
       %   voltages. The values are specified in 100ths of a volt and the
@@ -1882,19 +1765,16 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %     s.SetVoltageTripPoints(vlow,vcrit)
       %       TODO
       
-      assert(nargin>=3,...
+      assert(nargin>2,...
         'Inputs ''vlow'' and ''vcrit'' are required.');
-      if nargin < 4
-        reset_timeout_flag = [];
-      end
-      
       assert(isnumeric(vlow)&&isscalar(vlow)&&(vlow>=6.75)&&(vlow<=7.25),...
         'Input ''vlow'' must be a numeric scalar in [6.75,7.25] volts.');
       assert(isnumeric(vcrit)&&isscalar(vcrit)&&(vcrit>=6.25)&&(vcrit<=6.75),...
         'Input ''vcrit'' must be a numeric scalar in [6.25,6.75] volts.');
       assert((vlow-vcrit)>=0.25,...
         'The difference in input values vlow-vcrit must be at least 0.25 volts.');
-      
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
+
       vlow = s.ByteArrayFromInteger(round(100*vlow),'uint16');
       vcrit = s.ByteArrayFromInteger(round(100*vcrit),'uint16');
       
@@ -1907,8 +1787,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
     end
     
-    function fail = SetInactivityTimeout(s,timeout,...
-        reset_timeout_flag)
+    function fail = SetInactivityTimeout(s,timeout,varargin)
       % SetInactivityTimeout  Set sleep timeout in seconds
       %   To save battery power, Sphero normally goes to sleep after a
       %   period of inactivity. From the factory this value is set to 600
@@ -1932,18 +1811,12 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %     Sets inactivity timeout to 2718 seconds (45 minutes and 18
       %     seconds).
       
-      if nargin < 2
-        timeout = 600;
-      end
-      if nargin < 3
-        reset_timeout_flag = [];
-      end
-      
+      if nargin < 2, timeout = 600; end
       assert(isnumeric(timeout)&&isscalar(timeout)&&(timeout>=60)&&(timeout<=(2^16-1)),...
         sprintf('Input timeout must be a numeric scalar in [60,%d] seconds.',intmax('uint16')));
-      timeout = round(timeout);
-      
-      timeout = s.ByteArrayFromInteger(timeout,'uint16');
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
+
+      timeout = s.ByteArrayFromInteger(round(timeout),'uint16');
       
       did = s.DID_CORE;
       cid = s.SET_INACTIVE_TIMER;
@@ -1971,8 +1844,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       error('JumpToBootloader is not implemented');
     end
     
-    function fail = PerformLevel1Diagnostics(s,...
-        reset_timeout_flag)
+    function fail = PerformLevel1Diagnostics(s,varargin)
       % PerformLevel1Diagnostics
       %   This is a developer-level command to help diagnose aberrant
       %   behavior. Most system counters, process flags, and system states
@@ -1984,10 +1856,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   The diagnostic message is printed to the command window as well
       %   as a text file in the current folder as indicated as indicated in
       %   the command window output.
-      
-      if nargin < 2
-        reset_timeout_flag = [];
-      end
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
       
       did = s.DID_CORE;
       cid = s.CMD_RUN_L1_DIAGS;
@@ -1995,18 +1864,16 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
       [fail] = s.WriteClientCommandPacket(did,cid,data,...
         reset_timeout_flag,true);
-      
-      
-      
+            
     end
     
-    function [fail,data] = PerformLevel2Diagnostics(s,...
-        reset_timeout_flag)
+    function [fail,data] = PerformLevel2Diagnostics(s,varargin)
       % PerformLevel2Diagnostics
       %   This is a developers-only command to help diagnose aberrant
       %   behavior. It is much less informative than the Level 1 command
       %   but it is in binary format and easier to parse. Here is the
       %   layout of the data record which is currently 58h bytes long
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
       
       did = s.DID_CORE;
       cid = s.CMD_RUN_L2_DIAGS;
@@ -2024,16 +1891,12 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
     end
     
-    function fail = ClearCounters(s,...
-        reset_timeout_flag)
+    function fail = ClearCounters(s,varargin)
       % ClearCounters  TODO
       %   This is a developers-only command to clear the various system
       %   counters described in command 41h. It is denied when Sphero is in
       %   Normal mode.
-      
-      if nargin < 2
-        reset_timeout_flag = [];
-      end
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
       
       did = s.DID_CORE;
       cid = s.CMD_CLEAR_COUNTERS;
@@ -2044,8 +1907,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
     end
     
-    function fail = AssignTimeValue(s,sphero_time,...
-        reset_timeout_flag)
+    function fail = AssignTimeValue(s,sphero_time,varargin)
       % AssignTimeValue  Set Sphero's system clock timer.
       %   Sphero contains a 32-bit counter that increments every
       %   millisecond. It has no absolute temporal meaning, just a relative
@@ -2061,14 +1923,11 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   Usage:
       %     s.AssignTimeValue(2.718)
       %       Sets Sphero's clock to 2718 milliseconds.
-      assert(nargin>=2,...
+      assert(nargin>1,...
         'Input ''sphero_time'' is required.');
-      if nargin < 3
-        reset_timeout_flag = [];
-      end
-      
       assert(isnumeric(sphero_time)&&isscalar(sphero_time)&&(sphero_time>=0)&&(sphero_time<=intmax('uint32')),...
         sprintf('Input sphero_time must be a numeric scalar in [0,%f] seconds.',double(intmax('uint32'))/1000));
+      [reset_timeout_flag,~] = s.ParseVargs(varargin{:});
       
       sphero_time = round(sphero_time*1000);
       
@@ -2081,7 +1940,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
     end
     
-    function fail = PollPacketTimes(s,reset_timeout_flag)
+    function [fail,network_time] = PollPacketTimes(s,varargin)
       % PollPacketTimes  Profile network transport times.
       %   This command helps the Client application profile the
       %   transmission and processing latencies in Sphero so that a
@@ -2128,30 +1987,14 @@ classdef SpheroCore < handle & SpheroCoreConstants
       
       client_rx_time = round(s.time_since_init*1000); % millis
       
+      network_time = [];
       if isempty(data) || (12 ~= length(data))
         fail = true;
         return;
       end
       
-      client_tx_time = double(s.IntegerFromByteArray(data(1:4),'uint32'));
-      sphero_rx_time = double(s.IntegerFromByteArray(data(5:8),'uint32'));
-      sphero_tx_time = double(s.IntegerFromByteArray(data(9:12),'uint32'));
-      
-      if client_time ~= client_tx_time
-        warning('Echoed client tx time mismatch.');
-      end
-      
-      ct = client_tx_time;
-      cr = client_rx_time;
-      st = sphero_tx_time;
-      sr = sphero_rx_time;
-      
-      offset = 0.5 * ( (sr-ct) + (st-cr) );
-      
-      delay = (cr-ct) - (st-sr); % total network delay
-      
-      s.network_time.offset = offset/1000;
-      s.network_time.delay = delay/1000;
+      s.network_time = s.NetoworkTimesFromData(data,client_rx_time);
+      network_time = s.network_time;
       
     end
     
@@ -2558,17 +2401,17 @@ classdef SpheroCore < handle & SpheroCoreConstants
         reset_timeout_flag = [];
       end
       
-      range_idx = 2;
+      range_idx = s.ACCEL_RANGE_8G;
       
       switch fsr
         case 2
-          range_idx = 0;
+          range_idx = s.ACCEL_RANGE_2G;
         case 4
-          range_idx = 1;
+          range_idx = s.ACCEL_RANGE_4G;
         case 8
-          range_idx = 2;
+          range_idx = s.ACCEL_RANGE_8G;
         case 16
-          range_idx = 3;
+          range_idx = s.ACCEL_RANGE_16G;
         otherwise
           return;
       end
@@ -2766,14 +2609,14 @@ classdef SpheroCore < handle & SpheroCoreConstants
       end
       
       % figure out go parameter from state
-      go = 1;
+      roll_state = 1;
       switch state
         case 'normal'
-          go = 1;
+          roll_state = s.ROLL_STATE_NORMAL;
         case 'fast'
-          go = 2;
+          roll_state = s.ROLL_STATE_FAST;
         case 'stop'
-          go = 0;
+          roll_state = s.ROLL_STATE_STOP;
         otherwise
           return;
       end
@@ -2794,26 +2637,17 @@ classdef SpheroCore < handle & SpheroCoreConstants
     end
     
     function fail = Boost(s,state,...
-        reset_timeout_flag,answer_flag)
+        varargin)
       % Boost
       %   Beginning with FW 1.46 (S2) and 3.25 (S3), this executes the
       %   boost macro from within the SSB. It takes a 1 byte parameter
       %   which is either 01h to begin boosting or 00h to stop.
       
       fail = true;
-      if nargin<2
-        return;
-      end
-      if nargin<2
-        reset_timeout_flag = [];
-      end
-      if nargin<3
-        answer_flag = [];
-      end
-      
-      if ~ischar(state) || ~any(strmp(state,{'on','off'}))
-        return;
-      end
+      assert( nargin>1,'Input state is required.');
+      assert( ischar(state) && any(strmp(state,{'on','off'})),...
+        'Input state must be a char array in {''on'',''off''}.');
+      [reset_timeout_flag,answer_flag] = s.ParseVargs(varargin{:});
       
       switch state
         case 'on'
@@ -2822,9 +2656,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
           state = 0;
       end
       
-      did = s.DID_SPHERO;
-      cid = s.CMD_BOOST;
-      data = state;
+      did = s.DID_SPHERO; cid = s.CMD_BOOST; data = state;
       
       fail = s.WriteClientCommandPacket(did,cid,data,...
         reset_timeout_flag,answer_flag);
@@ -3326,6 +3158,109 @@ classdef SpheroCore < handle & SpheroCoreConstants
   end
   
   methods (Static=true,Access=protected)
+    
+    function out = NetworkTimesFromData(data,client_rx_time)
+      client_tx_time = double(s.IntegerFromByteArray(data(1:4),'uint32'));
+      sphero_rx_time = double(s.IntegerFromByteArray(data(5:8),'uint32'));
+      sphero_tx_time = double(s.IntegerFromByteArray(data(9:12),'uint32'));
+      
+      ct = client_tx_time;
+      cr = client_rx_time;
+      st = sphero_tx_time;
+      sr = sphero_rx_time;
+      
+      offset = 0.5 * ( (sr-ct) + (st-cr) );
+      
+      delay = (cr-ct) - (st-sr); % total network delay
+      
+      out.offset = offset/1000;
+      out.delay = delay/1000;
+      
+    end
+    
+    function [vlow,vcrit] = VoltageTripPointsFromData(data)
+      vlow = ...
+        0.01 * double(SpheroCore.IntegerFromByteArray(data(1:2),'uint16'));
+      vcrit = ...
+        0.01 * double(SpheroCore.IntegerFromByteArray(data(3:4),'uint16'));
+    end
+    
+    function out = PowerStateInfoFromData(data)
+      out.rec_ver = double(data(1));
+      out.power = SpheroCore.PowerStringFromEnum(double(data(2));   
+      out.batt_voltage = ...
+        0.01 * double(SpheroCore.IntegerFromByteArray(data(3:4),'uint16'));
+      out.num_charges = ...
+        double(SpheroCore.IntegerFromByteArray(data(5:6),'uint16'));
+      out.time_since_charge = ...
+        double(SpheroCore.IntegerFromByteArray(data(7:8),'uint16'));
+    end
+    
+    function out = AutoReconnectInfoFromData(data)
+      out.flag = data(1)==1;
+      out.time = double(data(2));
+    end
+    
+    function out = BluetoothInfoFromData(data)
+      
+      name = char(data(1:16));
+      out.name = name(1:find(name,1,'last'));
+      addr = char(data(17:28));
+      out.address = [sprintf('%c%c:',addr(1:10)),addr(11:12)];
+      % 29 should be zero
+      out.rgb = char(data(30:32));
+      
+    end
+    
+    function out = VersionInfoFromData(data)
+      
+      out.recv = data(1);
+      out.mdl = data(2);
+      out.hw =  data(3);
+      out.msa_ver = data(4);
+      out.msa_rev = data(5);
+      out.bl = bitand(bitshift(data(6),-4),15,'uint8') + ...
+        + 0.1 * bitand(data(6),15,'uint8');
+      out.bas = ...
+        bitand(bitshift(data(7),-4),15,'uint8') + ...
+        + 0.1 * bitand(data(7),15,'uint8');
+      out.macro = ...
+        bitand(bitshift(data(8),-4),15,'uint8') + ...
+        + 0.1 * bitand(data(8),15,'uint8');
+      
+    end
+    
+    function [reset_timeout_flag,answer_flag] = ParseVargs(vargs)
+      N = length(vargs)
+      reset_timeout_flag = [];
+      answer_flag = [];
+      assert( all(cellfun(@islogical,vargs)),...
+        'Variable input arguments must be logical flags.');
+      if N>0
+        reset_timeout_flag = vargs{1};
+      end
+      if N>1
+        answer_flag = vargs{2};
+      end  
+    end
+    
+    function str = PowerStringFromEnum(num)
+      
+      switch num
+        case s.PWR_CHARGING
+          str = 'charging';
+        case s.PWR_OK
+          str = 'ok';
+        case s.PWR_LOW
+          str = 'low';
+        case s.PWR_CRITICAL
+          str = 'critical';
+        otherwise
+          warning('Unknown power state.');
+          str = 'unknown';
+      end
+      
+    end
     
     function out = AssertUserCallbackFcn(func,str)
       assert( (isa(func,'function_handle')&&(2==nargin(func))) || isempty(func),...
