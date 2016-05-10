@@ -29,8 +29,8 @@ Before you begin ...
 1) Make sure Sphero is paired in your OS (take note of the display name)
 2) Open Matlab
 3) Add this packages folders to Matlab's search path
-   * run the command "install" from this directory
-   * optionally, run the command "install save" to save the new search path
+   * run the command "install_sphero" from this directory
+   * optionally, run the command "install_sphero save" to save the new search path
      (so that you don't have to do this every time you launch Matlab)
 4) See the Getting_Started example script for more
 

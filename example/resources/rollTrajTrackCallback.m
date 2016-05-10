@@ -34,7 +34,7 @@ fprintf('speed = %10f heading = %10f\n',speed,heading);
 % must set answer_flag (input parameter 5) false!
 % if default answer_flag is true and this is not set false, the event queue
 % filla up and matlab hangs
-src.RollWithOffset(speed,heading,[],[],false);
+src.RollWithOffset(speed,heading,'normal',[],false);
 
 fprintf('done\n');
 end

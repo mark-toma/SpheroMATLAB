@@ -9,9 +9,10 @@ classdef Sphero < SpheroInterface
   %   http://www.mathworks.com/matlabcentral/fileexchange/48359-sphero-matlab-interface
   
   methods
-    function s = Sphero()
-      s@SpheroInterface();
+    function s = Sphero(varargin)
+      s@SpheroInterface(varargin{:});
     end
+    %{
     function connectBluetooth(s)
       % connectBluetooth  Provides an interface to
       % SpheroCore/ConnectDevice()
@@ -46,6 +47,7 @@ classdef Sphero < SpheroInterface
       % outputs
       x = s.odo(1); y = s.odo(2); dx = s.vel(1); dy = s.vel(2); v = s.sog;
     end
+    %}
     
   end
   

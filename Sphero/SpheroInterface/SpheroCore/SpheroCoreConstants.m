@@ -11,7 +11,7 @@
 %   ...
 classdef (HandleCompatible) SpheroCoreConstants
   
-  properties (Hidden, SetAccess = protected)
+  properties (Constant, Hidden)
     % === Device IDs ==========================================================
     DID_CORE       =    0;                                                % 00h
     DID_BOOTLOADER =    1;                                                % 01h
@@ -281,6 +281,12 @@ classdef (HandleCompatible) SpheroCoreConstants
     ROLL_STATE_STOP   = 0;
     ROLL_STATE_NORMAL = 1;
     ROLL_STATE_FAST   = 2;
+    
+    RAW_MOTOR_MODE_OFF     = 0;
+    RAW_MOTOR_MODE_FORWARD = 1;
+    RAW_MOTOR_MODE_REVERSE = 2;
+    RAW_MOTOR_MODE_BRAKE   = 3;
+    RAW_MOTOR_MODE_IGNORE  = 4;
   end
   
 end

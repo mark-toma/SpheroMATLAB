@@ -152,7 +152,8 @@ UpdateInputSetpoint(handles);
 
 if ~isempty(handles.s)
   handles.s.NewDataStreamingFcn = @(src,evt)DataStreamingCallback(src,evt,handles);
-  handles.s.ConfigureLocatorWithOffset(0,0);
+  handles.s.SetStabilization(true);
+  handles.s.ConfigureLocatorWithOffset(0,0,false);
 end
 
 % Choose default command line output for SpheroGUI_Drive
