@@ -152,7 +152,7 @@ set(handles.lb_device_list,'string','Connecting...');
 drawnow;
 
 try
-  handles.s = Sphero(remote_name)
+  handles.s = Sphero(remote_name);
 catch err
   warning('Failed to connect Sphero ''%s'' with message,\n\t%s\n',...
     remote_name,err.message)

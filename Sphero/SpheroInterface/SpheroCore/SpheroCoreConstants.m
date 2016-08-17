@@ -251,7 +251,7 @@ classdef (HandleCompatible) SpheroCoreConstants
     BT_CHANNEL = 1;
     BT_NUM_CONNECTION_ATTEMPTS = 3;
  
-    WAIT_FOR_CMD_RSP_DELAY = 0.001;
+    WAIT_FOR_CMD_RSP_DELAY = 0.01;
     WAIT_FOR_CMD_RSP_TIMEOUT = 4;
     
     SPHERO_CONTROL_SYSTEM_RATE = 400; % [Hz]

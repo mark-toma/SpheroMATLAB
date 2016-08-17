@@ -249,7 +249,7 @@ function DataStreamingCallback(src,evt,handles)
 
 % odometry data
 odo_log = src.odo_log;
-xvec = odo_log(1,:); yvec = odo_log(2,:);
+xvec = odo_log(:,1); yvec = odo_log(:,2);
 x = xvec(end); y = yvec(end);
 
 % velocity data
@@ -396,7 +396,7 @@ switch get(hObject,'string')
       'ylim',handles.const.workspace_dim*[-0.5,0.5]);      
     if ~isempty(handles.s)
       handles.s.ClearLogs();
-      handles.s.ConfigureLocatorWithOffset(0,0);
+      handles.s.ConfigureLocatorWithOffset(0,0,false);
       handles.s.SetDataStreaming(...
         handles.const.frame_rate,...
         handles.const.frame_count,...
