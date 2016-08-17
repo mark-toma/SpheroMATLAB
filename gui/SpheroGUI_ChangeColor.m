@@ -161,5 +161,5 @@ set(handles.st_rgb,'string',rgb_string);
 
 % send command to sphero
 if ~isempty(handles.s)
-  handles.s.SetRGBLEDOutput(rgb,[],[],true);
+  handles.s.SetRGBLEDOutput(rgb,false,[],true);
 end

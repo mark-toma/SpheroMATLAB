@@ -31,7 +31,7 @@ param.max_speed = max_speed;
 % optionally align sphero
 s.SetBackLEDOutput(1); % turn on back led
 s.heading_offset = 90; % change heading offset
-s.RollWithOffset(0,0); % orient to the heading offset to check alignment
+s.RollWithOffset(0,0,'normal'); % orient to the heading offset to check alignment
 s.SetBackLEDOutput(1); % turn off back led
 
 % streaming param
@@ -47,7 +47,7 @@ s.SetStabilization(true); % set stabilization on for Roll
 
 s.ClearLogs();
 
-s.ConfigureLocatorWithOffset(0,0);
+s.ConfigureLocatorWithOffset(0,0,false);
 
 %% Start Data Streaming
 
@@ -58,6 +58,3 @@ s.SetDataStreaming(frame_rate,frame_count,packet_count,sensors);
 
 s.SetDataStreaming(1,1,0,{''});
 
-%% Clearn up the figure
-
-delete(hf);

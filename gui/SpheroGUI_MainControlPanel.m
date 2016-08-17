@@ -52,7 +52,7 @@ function SpheroGUI_MainControlPanel_OpeningFcn(hObject, eventdata, handles, vara
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to SpheroGUI_MainControlPanel (see VARARGIN)
 
-handles.s = Sphero();
+handles.s = [];
 set(get(handles.pnl_apps,'children'),'enable','off');
 
 % Choose default command line output for SpheroGUI_MainControlPanel
@@ -77,8 +77,8 @@ varargout{1} = handles.output;
 
 
 function PowerNotificationCallback(src,evt,handles)
-
-handles.s.GetPowerState();
+return; % bail out
+handles.s.GetPowerState(); 
 pwr_info = handles.s.power_state_info;
 
 set(handles.st_power,'string',pwr_info.power);
@@ -151,12 +151,21 @@ set(handles.lb_device_list,'value',1);
 set(handles.lb_device_list,'string','Connecting...');
 drawnow;
 
-if handles.s.ConnectDevice(remote_name)
+try
+  handles.s = Sphero(remote_name);
+catch err
+  warning('Failed to connect Sphero ''%s'' with message,\n\t%s\n',...
+    remote_name,err.message)
+  handles.s = [];
+end
+
+if isempty(handles.s)
   % failed to connect
   set(hObject,'enable','on');
   set(handles.lb_device_list,'string',dev_names);
   set(handles.lb_device_list,'value',dev_id);
 else
+  guidata(hObject,handles);
   % successful connection
   set(hObject,'enable','off');
   set(handles.lb_device_list,'string','Connected!');
@@ -166,9 +175,9 @@ else
   % set versioning info
   ver_info=handles.s.version_info;
   set(handles.st_ver_msa,'string',...
-    sprintf('%d.%d',ver_info.MSA_ver,ver_info.MSA_rev));
-  set(handles.st_ver_hw,'string',sprintf('%d',ver_info.HW));
-  set(handles.st_ver_bl,'string',sprintf('%3.1f',ver_info.BL));
+    sprintf('%d.%d',ver_info.msa_ver,ver_info.msa_rev));
+  set(handles.st_ver_hw,'string',sprintf('%d',ver_info.hw));
+  set(handles.st_ver_bl,'string',sprintf('%3.1f',ver_info.bl));
   
   % get/set bluetooth info
   handles.s.GetBluetoothInfo();
@@ -184,8 +193,6 @@ else
   
   
 end
-
-
 
 
 % --- Executes on selection change in lb_device_list.
@@ -233,7 +240,9 @@ function figure1_DeleteFcn(hObject, eventdata, handles)
 % hObject    handle to figure1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-delete(handles.s);
+if ~isempty(handles.s)
+  delete(handles.s);
+end
 
 
 % --- Executes on button press in pb_config_heading_offset.

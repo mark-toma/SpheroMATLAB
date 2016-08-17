@@ -159,9 +159,9 @@ function DataStreamingCallback(src,evt,handles)
 WINDOW = 10; % width of time axes in seconds
 
 quat = src.quat;
-quat = quat .* [1;-1;-1;-1]; % conjugate to get body w.r.t. global
+quat = quat .* [1,-1,-1,-1]; % conjugate to get body w.r.t. global
 
-R = quat2rot(quat,'sv');
+R = quat2rot(quat','sv');
 
 H = [R,[0;0;0];0,0,0,1]; % hom. transform
 set(handles.hp.robot,'matrix',H);
@@ -181,29 +181,29 @@ time = time(ids);
 
 % update strip chart data
 g = src.gyro_raw_log; 
-g = g(:,ids);
+g = g(ids,:);
 a = src.accel_raw_log; 
-a = a(:,ids);
+a = a(ids,:);
 
 if strcmp('rb_world',get(get(handles.pnl_reference_frame,'selectedobject'),'tag'))
   q = handles.s.quat_log;
-  q = q(:,ids);
-  q = diag([1,-1,-1,-1])*q;
-  Rq = quat2rot(q,'sv');
+  q = q(ids,:);
+  q = q .* [1,-1,-1,-1];
+  Rq = quat2rot(q','sv');
   for ii = 1: size(Rq,3)
-    g(:,ii) = Rq(:,:,ii)*g(:,ii);
-    a(:,ii) = Rq(:,:,ii)*a(:,ii);
+    g(ii,:) = (Rq(:,:,ii)*g(ii,:))';
+    a(ii,:) = (Rq(:,:,ii)*a(ii,:))';
   end
 end
 
-set(handles.hp.gyro(1),'xdata',time,'ydata',g(1,:));
-set(handles.hp.gyro(2),'xdata',time,'ydata',g(2,:));
-set(handles.hp.gyro(3),'xdata',time,'ydata',g(3,:));
+set(handles.hp.gyro(1),'xdata',time,'ydata',g(:,1));
+set(handles.hp.gyro(2),'xdata',time,'ydata',g(:,2));
+set(handles.hp.gyro(3),'xdata',time,'ydata',g(:,3));
 
-set(handles.hp.accel(1),'xdata',time,'ydata',a(1,:));
-set(handles.hp.accel(2),'xdata',time,'ydata',a(2,:));
-set(handles.hp.accel(3),'xdata',time,'ydata',a(3,:));
-set(handles.hp.accel(4),'xdata',time,'ydata',sqrt(sum(a.^2)));
+set(handles.hp.accel(1),'xdata',time,'ydata',a(:,1));
+set(handles.hp.accel(2),'xdata',time,'ydata',a(:,2));
+set(handles.hp.accel(3),'xdata',time,'ydata',a(:,3));
+set(handles.hp.accel(4),'xdata',time,'ydata',sqrt(sum(a'.^2)));
 
 % update axes limits
 set(handles.ax_gyro,'xlim',xlims);

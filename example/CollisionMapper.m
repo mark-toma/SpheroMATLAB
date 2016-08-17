@@ -76,7 +76,7 @@ switch ud.state
   case 'drive'
     %fprintf('DRIVE\n');
     % send roll command
-    s.RollWithOffset(ud.SPEED,ud.heading,[],[],false);
+    s.RollWithOffset(ud.SPEED,ud.heading,'normal',[],false);
     
     % by default, we exit this state in the collision callback
     % in the event of a collision, sphero is stopped and sphero transitions
@@ -85,7 +85,7 @@ switch ud.state
     % or if we timeout, we do the same here.
     
     if (s.time_since_init - ud.transition_time) > ud.DRIVE_TIME
-      s.RollWithOffset(0,ud.heading,[],[],false); % stay still
+      s.RollWithOffset(0,ud.heading,'normal',[],false); % stay still
       ud.transition_time = s.time_since_init;
       ud.state = 'idle';
       fprintf('DRIVE >> IDLE\n')
@@ -94,7 +94,7 @@ switch ud.state
     
   case 'idle'
     
-    s.RollWithOffset(0,ud.heading,[],[],false); % stay still
+    s.RollWithOffset(0,ud.heading,'normal',[],false); % stay still
     
     if (s.time_since_init - ud.transition_time) > ud.IDLE_TIME
       fprintf('IDLE >> DRIVE\n');
@@ -118,7 +118,7 @@ set(hgfx.traj,'xdata',x,'ydata',y);
 set(hgfx.robot,'xdata',x(end),'ydata',y(end));
 
 % update axes limits
-set(hgfx.ax,'xlim',[min(x),max(x)],'ylim',[min(y),max(y)]);
+set(hgfx.ha,'xlim',[min(x),max(x)],'ylim',[min(y),max(y)]);
 drawnow;
 
 end
@@ -132,7 +132,7 @@ ud = s.userdata;
 % if a collision is detected, stop, save collision info, and change state
 % to idle
 
-s.RollWithOffset(0,ud.heading,[],[],false); % stay still
+s.RollWithOffset(0,ud.heading,'normal',[],false); % stay still
 ud.transition_time = s.time_since_init;
 ud.state = 'idle';
 
