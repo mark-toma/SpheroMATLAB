@@ -2375,7 +2375,7 @@ classdef SpheroCore < handle & SpheroCoreConstants
       %   to the ouput of instrhwinfo, but only includes devices with
       %   partial match to remote_name.
       
-      if nargin < 2, remote_name = SpheroCoreConstants.BT_DEFAULT_REMOTE_NAME; end
+      if nargin < 1, remote_name = SpheroCoreConstants.BT_DEFAULT_REMOTE_NAME; end
       assert( ischar(remote_name),'Input ''remote_name'' must be a char array.');
       
       % get info about available bluetooth devices
