@@ -188,11 +188,11 @@ a = a(ids,:);
 if strcmp('rb_world',get(get(handles.pnl_reference_frame,'selectedobject'),'tag'))
   q = handles.s.quat_log;
   q = q(ids,:);
-  q = q .* [1,-1,-1,-1];
+  q = q .* repmat([1,-1,-1,-1],[length(ids),1]);
   Rq = quat2rot(q','sv');
   for ii = 1: size(Rq,3)
-    g(ii,:) = (Rq(:,:,ii)*g(ii,:))';
-    a(ii,:) = (Rq(:,:,ii)*a(ii,:))';
+    g(ii,:) = (Rq(:,:,ii)*g(ii,:)')';
+    a(ii,:) = (Rq(:,:,ii)*a(ii,:)')';
   end
 end
 
