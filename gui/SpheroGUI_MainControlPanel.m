@@ -99,7 +99,7 @@ function pb_find_devices_Callback(hObject, eventdata, handles)
 set(hObject,'enable','off');
 set(handles.lb_device_list,'string','Searching for devices...');
 drawnow;
-info = handles.s.FindSpheroDevice();
+info = SpheroCore.FindSpheroDevice();
 if info.NumDevices > 0
   dev_names = info.RemoteNames;
   set(handles.pb_connect_device,'enable','on');
