@@ -159,7 +159,7 @@ function DataStreamingCallback(src,evt,handles)
 WINDOW = 10; % width of time axes in seconds
 
 quat = src.quat;
-quat = quat .* [1,-1,-1,-1]; % conjugate to get body w.r.t. global
+%quat = quat .* [1,-1,-1,-1]; % conjugate to get body w.r.t. global
 
 R = quat2rot(quat','sv');
 
